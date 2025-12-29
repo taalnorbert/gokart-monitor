@@ -7,3 +7,6 @@ export { RaceLights } from './RaceLights';
 export { KartRankings } from './KartRankings';
 export { Legend } from './Legend';
 export { DriverTracker } from './DriverTracker';
+export { Modal } from './Modal';
+export { DriverLapHistory } from './DriverLapHistory';
+export { KartLapHistory } from './KartLapHistory';

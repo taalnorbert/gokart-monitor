@@ -1,0 +1,1 @@
+export { KartLapHistory } from './KartLapHistory';

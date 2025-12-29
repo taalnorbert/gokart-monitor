@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { KartStyle } from '../../types';
 import './Legend.css';
 
@@ -6,12 +7,21 @@ interface LegendProps {
 }
 
 export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const groupColors = Array.from(kartStyles.entries()).slice(0, 8);
 
   return (
     <section className="legend">
-      <h3 className="legend__title">📖 Útmutató - Hogyan értelmezd az adatokat</h3>
+      <button 
+        className="legend__toggle"
+        onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
+      >
+        <span className="legend__toggle-icon">{isExpanded ? '▼' : '▶'}</span>
+        <span className="legend__toggle-title">📖 Útmutató - Hogyan értelmezd az adatokat</span>
+      </button>
       
+      {isExpanded && (
       <div className="legend__sections">
         <div className="legend__section">
           <h4 className="legend__section-title">📊 Táblázat oszlopok</h4>
@@ -170,6 +180,7 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
           </ul>
         </div>
       </div>
+      )}
     </section>
   );
 };

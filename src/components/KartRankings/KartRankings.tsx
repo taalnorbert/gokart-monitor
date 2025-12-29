@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { KartStats, KartStyle } from '../../types';
+import { Modal } from '../Modal';
+import { KartLapHistory } from '../KartLapHistory';
 import './KartRankings.css';
 
 interface KartRankingsProps {
@@ -10,14 +12,9 @@ interface KartRankingsProps {
 
 export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyles, activeKarts = new Set() }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedKart, setSelectedKart] = useState<string | null>(null);
+  const [historyKart, setHistoryKart] = useState<{ kartNumber: string; kartClass: string } | null>(null);
 
   if (kartStats.length === 0) return null;
-
-  const formatTime = (ms: number): string => {
-    const seconds = ms / 1000;
-    return seconds.toFixed(3);
-  };
 
   const getKartStyle = (kartClass: string) => {
     const style = kartStyles.get(kartClass);
@@ -26,10 +23,6 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
       color: style?.color || '#FFF',
     };
   };
-
-  const selectedKartData = selectedKart 
-    ? kartStats.find(k => k.kartNumber === selectedKart) 
-    : null;
 
   return (
     <div className="kart-rankings">
@@ -51,9 +44,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
               return (
               <div 
                 key={kart.kartNumber}
-                className={`kart-rankings__item ${selectedKart === kart.kartNumber ? 'kart-rankings__item--selected' : ''} ${isActive ? 'kart-rankings__item--active' : ''}`}
-                onClick={() => setSelectedKart(selectedKart === kart.kartNumber ? null : kart.kartNumber)}
-                title={isActive ? 'Ez a kart jelenleg futamban van' : ''}
+                className={`kart-rankings__item ${isActive ? 'kart-rankings__item--active' : ''}`}
               >
                 <span className="kart-rankings__rank">
                   {index === 0 && '🥇'}
@@ -77,74 +68,35 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
                   {kart.lapCount} kör
                 </span>
                 
-                <span className="kart-rankings__driver">
-                  {kart.bestLapDriver}
-                </span>
+                <button
+                  className="kart-rankings__history-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHistoryKart({ kartNumber: kart.kartNumber, kartClass: kart.kartClass });
+                  }}
+                  title="Köridő előzmények"
+                >
+                  📊
+                </button>
               </div>
             );
             })}
           </div>
-
-          {selectedKartData && (
-            <div className="kart-rankings__details">
-              <h4 className="kart-rankings__details-title">
-                <span 
-                  className="kart-rankings__kart-badge"
-                  style={getKartStyle(selectedKartData.kartClass)}
-                >
-                  {selectedKartData.kartNumber}
-                </span>
-                Részletes statisztika
-              </h4>
-              
-              <div className="kart-rankings__stats">
-                <div className="kart-rankings__stat">
-                  <span className="kart-rankings__stat-label">Legjobb kör</span>
-                  <span className="kart-rankings__stat-value kart-rankings__stat-value--best">
-                    {selectedKartData.bestLapDisplay}
-                  </span>
-                </div>
-                
-                <div className="kart-rankings__stat">
-                  <span className="kart-rankings__stat-label">Átlag</span>
-                  <span className="kart-rankings__stat-value">
-                    {formatTime(selectedKartData.averageLapTime)}
-                  </span>
-                </div>
-                
-                <div className="kart-rankings__stat">
-                  <span className="kart-rankings__stat-label">Körök</span>
-                  <span className="kart-rankings__stat-value">
-                    {selectedKartData.lapCount}
-                  </span>
-                </div>
-                
-                <div className="kart-rankings__stat">
-                  <span className="kart-rankings__stat-label">Utolsó pilóta</span>
-                  <span className="kart-rankings__stat-value">
-                    {selectedKartData.lastDriver}
-                  </span>
-                </div>
-              </div>
-
-              {selectedKartData.allLapTimes.length > 1 && (
-                <div className="kart-rankings__laptimes">
-                  <span className="kart-rankings__laptimes-label">Utolsó 5 kör:</span>
-                  <div className="kart-rankings__laptimes-list">
-                    {selectedKartData.allLapTimes.slice(-5).reverse().map((time, idx) => (
-                      <span 
-                        key={idx} 
-                        className={`kart-rankings__laptime ${time === selectedKartData.bestLapTime ? 'kart-rankings__laptime--best' : ''}`}
-                      >
-                        {formatTime(time)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
+      )}
+
+      {historyKart && (
+        <Modal
+          isOpen={!!historyKart}
+          onClose={() => setHistoryKart(null)}
+          title={`🏎️ Kart #${historyKart.kartNumber} - Köridő Előzmények`}
+        >
+          <KartLapHistory
+            kartNumber={historyKart.kartNumber}
+            kartClass={historyKart.kartClass}
+            kartStyles={kartStyles}
+          />
+        </Modal>
       )}
     </div>
   );

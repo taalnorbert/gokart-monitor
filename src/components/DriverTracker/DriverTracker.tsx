@@ -1,6 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import type { Driver, KartStyle, SavedDriver } from '../../types';
 import { getCellStyle, getStatusStyle } from '../../utils/kartColors';
+import { Modal } from '../Modal';
+import { DriverLapHistory } from '../DriverLapHistory';
 import './DriverTracker.css';
 
 interface DriverTrackerProps {
@@ -22,6 +24,7 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -244,6 +247,16 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
           )}
         </select>
 
+        {followedDriver && (
+          <button 
+            className="driver-tracker__history-btn"
+            onClick={() => setIsHistoryModalOpen(true)}
+            title="Előző köridők megtekintése"
+          >
+            📊
+          </button>
+        )}
+
         {trackedDriver && (
           <button 
             className="driver-tracker__expand"
@@ -343,6 +356,19 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
             {trackedDriver.lastLap || '-'}
           </span>
         </div>
+      )}
+
+      {followedDriver && (
+        <Modal
+          isOpen={isHistoryModalOpen}
+          onClose={() => setIsHistoryModalOpen(false)}
+          title={`📊 ${followedDriver} - Köridő Előzmények`}
+        >
+          <DriverLapHistory
+            driverName={followedDriver}
+            kartStyles={kartStyles}
+          />
+        </Modal>
       )}
     </div>
   );

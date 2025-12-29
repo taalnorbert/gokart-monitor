@@ -168,6 +168,51 @@ app.get('/api/driver/:name', async (req, res) => {
   }
 });
 
+app.get('/api/kart/:kartNumber', async (req, res) => {
+  try {
+    const { kartNumber } = req.params;
+    
+    const kart = await prisma.kart.findUnique({
+      where: { kartNumber },
+      include: {
+        lapTimes: {
+          include: { driver: true },
+          orderBy: { createdAt: 'desc' },
+          take: 50
+        }
+      }
+    });
+
+    if (!kart) {
+      return res.status(404).json({ error: 'Kart not found' });
+    }
+
+    const bestLap = await prisma.lapTime.findFirst({
+      where: { kartId: kart.id },
+      orderBy: { timeMs: 'asc' },
+      include: { driver: true }
+    });
+
+    const kartBestInfo = await prisma.kartBestLap.findUnique({
+      where: { kartNumber }
+    });
+
+    // Get unique drivers who drove this kart
+    const uniqueDrivers = [...new Set(kart.lapTimes.map(lt => lt.driver.name))];
+
+    res.json({
+      kart,
+      bestLap,
+      kartBestInfo,
+      totalLaps: kart.lapTimes.length,
+      uniqueDrivers
+    });
+  } catch (error) {
+    console.error('Error fetching kart:', error);
+    res.status(500).json({ error: 'Failed to fetch kart' });
+  }
+});
+
 app.delete('/api/cleanup', async (req, res) => {
   try {
     const cutoffDate = new Date(Date.now() - 48 * 60 * 60 * 1000);
