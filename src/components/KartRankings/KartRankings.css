@@ -1,0 +1,265 @@
+.kart-rankings {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.kart-rankings__toggle {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.kart-rankings__toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.kart-rankings__toggle-icon {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.kart-rankings__toggle-title {
+  flex: 1;
+  text-align: left;
+}
+
+.kart-rankings__badge {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.kart-rankings__content {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+}
+
+.kart-rankings__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.kart-rankings__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.kart-rankings__list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.kart-rankings__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.3);
+  border-radius: 3px;
+}
+
+.kart-rankings__list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.5);
+}
+
+.kart-rankings__item {
+  display: grid;
+  grid-template-columns: 40px 50px 80px 60px 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.625rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.kart-rankings__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.kart-rankings__item--selected {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.kart-rankings__rank {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.kart-rankings__kart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  min-width: 2rem;
+}
+
+.kart-rankings__time {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #00ff88;
+}
+
+.kart-rankings__laps {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.kart-rankings__driver {
+  font-size: 0.8rem;
+  color: #aaa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kart-rankings__details {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.kart-rankings__details-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.kart-rankings__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.kart-rankings__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.kart-rankings__stat-label {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kart-rankings__stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.kart-rankings__stat-value--best {
+  color: #00ff88;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.kart-rankings__laptimes {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kart-rankings__laptimes-label {
+  font-size: 0.75rem;
+  color: #888;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.kart-rankings__laptimes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.kart-rankings__laptime {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  color: #aaa;
+}
+
+.kart-rankings__laptime--best {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+}
+
+@media (max-width: 768px) {
+  .kart-rankings__item {
+    grid-template-columns: 35px 45px 70px 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  .kart-rankings__laps {
+    display: none;
+  }
+  
+  .kart-rankings__driver {
+    max-width: 100px;
+  }
+  
+  .kart-rankings__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .kart-rankings {
+    border-radius: 8px;
+  }
+  
+  .kart-rankings__toggle {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .kart-rankings__content {
+    padding: 0.75rem;
+  }
+  
+  .kart-rankings__item {
+    grid-template-columns: 30px 40px 65px 1fr;
+    font-size: 0.8rem;
+  }
+  
+  .kart-rankings__time {
+    font-size: 0.8rem;
+  }
+  
+  .kart-rankings__driver {
+    display: none;
+  }
+}

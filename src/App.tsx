@@ -1,35 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { Header, MessageBanner, DebugPanel, Leaderboard, KartRankings, Legend, DriverTracker } from './components';
+import { useRaceData } from './hooks/useRaceData';
+import './styles/global.css';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => {
+  const { drivers, raceInfo, connectionStatus, debugLog, kartStyles, kartStats } = useRaceData();
+  const [followedDriver, setFollowedDriver] = useState<string | null>(null);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="app">
+      <div className="app__container">
+        <Header 
+          title={raceInfo.title2} 
+          track={raceInfo.track}
+          connectionStatus={connectionStatus}
+          countdown={raceInfo.countdown}
+          lightStatus={raceInfo.lightStatus}
+        />
 
-export default App
+        <MessageBanner message={raceInfo.message} />
+
+        <DebugPanel 
+          logs={debugLog} 
+          driverCount={drivers.length}
+        />
+
+        <main className="app__main">
+          <DriverTracker
+            drivers={drivers}
+            kartStyles={kartStyles}
+            followedDriver={followedDriver}
+            onFollowDriver={setFollowedDriver}
+          />
+
+          <KartRankings 
+            kartStats={kartStats} 
+            kartStyles={kartStyles}
+          />
+          
+          <Leaderboard 
+            drivers={drivers} 
+            isConnected={connectionStatus === 'connected'}
+            kartStyles={kartStyles}
+            followedDriver={followedDriver}
+          />
+        </main>
+
+        <Legend kartStyles={kartStyles} />
+
+        <footer className="app__footer">
+          <p>GoKart Monitor • APEX Timing Live Data</p>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+export default App;

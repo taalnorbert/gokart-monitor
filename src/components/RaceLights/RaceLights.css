@@ -1,0 +1,50 @@
+.race-lights {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.race-lights__light {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.race-lights--green .race-lights__light {
+  background: #00ff88;
+  box-shadow: 0 0 16px #00ff88, 0 0 32px rgba(0, 255, 136, 0.5);
+}
+
+.race-lights--red .race-lights__light {
+  background: #ff4444;
+  box-shadow: 0 0 16px #ff4444, 0 0 32px rgba(255, 68, 68, 0.5);
+}
+
+.race-lights--yellow .race-lights__light {
+  background: #ffd700;
+  box-shadow: 0 0 16px #ffd700, 0 0 32px rgba(255, 215, 0, 0.5);
+  animation: yellowPulse 0.5s infinite;
+}
+
+.race-lights--off .race-lights__light {
+  background: #333;
+  box-shadow: none;
+}
+
+@keyframes yellowPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 768px) {
+  .race-lights__light {
+    width: 12px;
+    height: 12px;
+  }
+}

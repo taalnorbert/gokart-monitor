@@ -1,0 +1,25 @@
+.kart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.875rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: 2.5rem;
+  border-bottom: 3px solid;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.kart-badge:hover {
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .kart-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: 2rem;
+  }
+}

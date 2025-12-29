@@ -1,0 +1,146 @@
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.header__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.header__info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.header__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header__title {
+  margin: 0;
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff 0%, #a8a8a8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.header__track {
+  margin: 0.4rem 0 0;
+  color: #888;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.header__status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.875rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header__indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.header__indicator--live {
+  background-color: #00ff88;
+  box-shadow: 0 0 10px #00ff88, 0 0 20px rgba(0, 255, 136, 0.5);
+  animation: pulse 2s infinite;
+}
+
+.header__indicator--offline {
+  background-color: #ff4444;
+  box-shadow: 0 0 10px #ff4444;
+}
+
+.header__status-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@media (max-width: 768px) {
+  .header__content {
+    padding: 1rem 1.25rem;
+  }
+  
+  .header__right {
+    gap: 0.75rem;
+  }
+  
+  .header__status {
+    padding: 0.35rem 0.75rem;
+  }
+  
+  .header__status-text {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    border-radius: 12px;
+    margin-bottom: 1rem;
+  }
+  
+  .header__content {
+    padding: 0.875rem 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .header__right {
+    justify-content: space-between;
+  }
+  
+  .header__track {
+    font-size: 0.8rem;
+  }
+  
+  .header__indicator {
+    width: 6px;
+    height: 6px;
+  }
+}

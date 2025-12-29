@@ -1,0 +1,53 @@
+.countdown-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 8px;
+}
+
+.countdown-timer--low {
+  background: rgba(255, 68, 68, 0.1);
+  border-color: rgba(255, 68, 68, 0.3);
+  animation: countdownPulse 1s infinite;
+}
+
+.countdown-timer__icon {
+  font-size: 1rem;
+}
+
+.countdown-timer__time {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.countdown-timer--low .countdown-timer__time {
+  color: #ff4444;
+}
+
+@keyframes countdownPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 768px) {
+  .countdown-timer {
+    padding: 0.4rem 0.75rem;
+  }
+  
+  .countdown-timer__time {
+    font-size: 1rem;
+  }
+  
+  .countdown-timer__icon {
+    font-size: 0.85rem;
+  }
+}
