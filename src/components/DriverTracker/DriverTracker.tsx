@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import type { Driver, KartStyle } from '../../types';
+import { useState, useMemo } from 'react';
+import type { Driver, KartStyle, SavedDriver } from '../../types';
 import { getCellStyle, getStatusStyle } from '../../utils/kartColors';
 import './DriverTracker.css';
 
@@ -8,15 +8,46 @@ interface DriverTrackerProps {
   kartStyles: Map<string, KartStyle>;
   followedDriver: string | null;
   onFollowDriver: (driverName: string | null) => void;
+  savedDrivers?: SavedDriver[];
 }
 
 export const DriverTracker: React.FC<DriverTrackerProps> = ({ 
   drivers, 
   kartStyles,
   followedDriver,
-  onFollowDriver 
+  onFollowDriver,
+  savedDrivers = []
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Combine current race drivers with saved drivers (without duplicates)
+  const allDriverOptions = useMemo(() => {
+    const currentDriverNames = new Set(drivers.map(d => d.name));
+    const options: Array<{ name: string; inRace: boolean; position?: number; kartNumber?: string; bestLapDisplay?: string }> = [];
+    
+    // Add current race drivers first
+    drivers.forEach(driver => {
+      options.push({
+        name: driver.name,
+        inRace: true,
+        position: driver.position,
+        kartNumber: driver.kartNumber,
+      });
+    });
+    
+    // Add saved drivers not in current race
+    savedDrivers.forEach(saved => {
+      if (!currentDriverNames.has(saved.name)) {
+        options.push({
+          name: saved.name,
+          inRace: false,
+          bestLapDisplay: saved.bestLapDisplay ?? undefined,
+        });
+      }
+    });
+    
+    return options;
+  }, [drivers, savedDrivers]);
 
   const trackedDriver = followedDriver 
     ? drivers.find(d => d.name === followedDriver) 
@@ -44,11 +75,24 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
           onChange={(e) => onFollowDriver(e.target.value || null)}
         >
           <option value="">-- Válassz pilótát --</option>
-          {drivers.map(driver => (
-            <option key={driver.id} value={driver.name}>
-              #{driver.position} - {driver.name} (Kart {driver.kartNumber})
-            </option>
-          ))}
+          {allDriverOptions.length > 0 && drivers.length > 0 && (
+            <optgroup label="🏁 Aktuális futam">
+              {allDriverOptions.filter(d => d.inRace).map(driver => (
+                <option key={driver.name} value={driver.name}>
+                  #{driver.position} - {driver.name} (Kart {driver.kartNumber})
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {allDriverOptions.some(d => !d.inRace) && (
+            <optgroup label="📊 Korábbi pilóták">
+              {allDriverOptions.filter(d => !d.inRace).map(driver => (
+                <option key={driver.name} value={driver.name}>
+                  {driver.name} {driver.bestLapDisplay ? `(Best: ${driver.bestLapDisplay})` : ''}
+                </option>
+              ))}
+            </optgroup>
+          )}
         </select>
 
         {trackedDriver && (

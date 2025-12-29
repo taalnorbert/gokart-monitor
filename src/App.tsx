@@ -5,7 +5,7 @@ import './styles/global.css';
 import './App.css';
 
 const App: React.FC = () => {
-  const { drivers, raceInfo, connectionStatus, debugLog, kartStyles, kartStats } = useRaceData();
+  const { drivers, raceInfo, connectionStatus, debugLog, kartStyles, kartStats, savedDrivers } = useRaceData();
   const [followedDriver, setFollowedDriver] = useState<string | null>(null);
 
   return (
@@ -32,11 +32,13 @@ const App: React.FC = () => {
             kartStyles={kartStyles}
             followedDriver={followedDriver}
             onFollowDriver={setFollowedDriver}
+            savedDrivers={savedDrivers}
           />
 
           <KartRankings 
             kartStats={kartStats} 
             kartStyles={kartStyles}
+            activeKarts={new Set(drivers.map(d => d.kartNumber))}
           />
           
           <Leaderboard 

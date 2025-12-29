@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./gokart.db"
+}
+
+model Kart {
+  id            String    @id @default(cuid())
+  kartNumber    String    @unique
+  kartClass     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lapTimes      LapTime[]
+}
+
+model Driver {
+  id            String    @id @default(cuid())
+  name          String    @unique
+  createdAt     DateTime  @default(now())
+  lapTimes      LapTime[]
+}
+
+model LapTime {
+  id            String    @id @default(cuid())
+  timeMs        Int
+  timeDisplay   String
+  createdAt     DateTime  @default(now())
+  
+  kartId        String
+  kart          Kart      @relation(fields: [kartId], references: [id], onDelete: Cascade)
+  
+  driverId      String
+  driver        Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  
+  @@index([kartId])
+  @@index([driverId])
+  @@index([createdAt])
+}
+
+model KartBestLap {
+  id            String    @id @default(cuid())
+  kartNumber    String    @unique
+  kartClass     String?
+  bestLapTime   Int
+  bestLapDisplay String
+  bestLapDriver String
+  lapCount      Int       @default(1)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

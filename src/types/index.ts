@@ -55,3 +55,12 @@ export interface KartStats {
   bestLapDriver: string;
 }
 
+export interface SavedDriver {
+  name: string;
+  totalLaps: number;
+  bestLapTime: number | null;
+  bestLapDisplay: string | null;
+  bestLapKart: string | null;
+  createdAt: string;
+}
+

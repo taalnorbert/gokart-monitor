@@ -167,6 +167,23 @@
   font-weight: 700;
 }
 
+.legend__kart-active-sample {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  font-size: 0.9rem;
+}
+
+.legend__kart-inactive-sample {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
 .legend__light {
   font-size: 1.25rem;
   width: 24px;

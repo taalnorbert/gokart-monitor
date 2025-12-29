@@ -25,3 +25,20 @@ dist-ssr
 
 # History files
 *.history
+
+# Database
+*.db
+*.db-journal
+server/prisma/*.db
+server/prisma/*.db-journal
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+server/dist
+
+# OS files
+Thumbs.db

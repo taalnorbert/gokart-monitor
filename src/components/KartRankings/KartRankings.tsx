@@ -5,9 +5,10 @@ import './KartRankings.css';
 interface KartRankingsProps {
   kartStats: KartStats[];
   kartStyles: Map<string, KartStyle>;
+  activeKarts?: Set<string>;
 }
 
-export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyles }) => {
+export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyles, activeKarts = new Set() }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedKart, setSelectedKart] = useState<string | null>(null);
 
@@ -45,11 +46,14 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
       {isExpanded && (
         <div className="kart-rankings__content">
           <div className="kart-rankings__list">
-            {kartStats.map((kart, index) => (
+            {kartStats.map((kart, index) => {
+              const isActive = activeKarts.has(kart.kartNumber);
+              return (
               <div 
                 key={kart.kartNumber}
-                className={`kart-rankings__item ${selectedKart === kart.kartNumber ? 'kart-rankings__item--selected' : ''}`}
+                className={`kart-rankings__item ${selectedKart === kart.kartNumber ? 'kart-rankings__item--selected' : ''} ${isActive ? 'kart-rankings__item--active' : ''}`}
                 onClick={() => setSelectedKart(selectedKart === kart.kartNumber ? null : kart.kartNumber)}
+                title={isActive ? 'Ez a kart jelenleg futamban van' : ''}
               >
                 <span className="kart-rankings__rank">
                   {index === 0 && '🥇'}
@@ -57,6 +61,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
                   {index === 2 && '🥉'}
                   {index > 2 && `#${index + 1}`}
                 </span>
+                {isActive && <span className="kart-rankings__active-badge">🏁</span>}
                 
                 <span 
                   className="kart-rankings__kart-badge"
@@ -77,7 +82,8 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
                   {kart.bestLapDriver}
                 </span>
               </div>
-            ))}
+            );
+            })}
           </div>
 
           {selectedKartData && (

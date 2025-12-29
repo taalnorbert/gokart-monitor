@@ -98,6 +98,37 @@
   border-color: rgba(255, 215, 0, 0.3);
 }
 
+.kart-rankings__item--active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  position: relative;
+}
+
+.kart-rankings__item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #3b82f6;
+  border-radius: 4px 0 0 4px;
+}
+
+.kart-rankings__item--active:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.kart-rankings__active-badge {
+  font-size: 0.75rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .kart-rankings__rank {
   font-size: 0.9rem;
   text-align: center;

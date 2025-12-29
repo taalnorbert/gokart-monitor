@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Driver, RaceInfo, ConnectionStatus, KartStyle, KartStats } from '../types';
+import type { Driver, RaceInfo, ConnectionStatus, KartStyle, KartStats, SavedDriver } from '../types';
 
 interface UseRaceDataReturn {
   drivers: Driver[];
@@ -8,9 +8,11 @@ interface UseRaceDataReturn {
   debugLog: string[];
   kartStyles: Map<string, KartStyle>;
   kartStats: KartStats[];
+  savedDrivers: SavedDriver[];
 }
 
 const WEBSOCKET_URL = 'wss://www.apex-timing.com:9703/';
+const API_URL = 'http://localhost:3001/api';
 
 const parseCssString = (css: string): KartStyle => {
   const borderMatch = css.match(/border-bottom-color:\s*([^;!]+)/i);
@@ -53,6 +55,7 @@ export const useRaceData = (): UseRaceDataReturn => {
   const [debugLog, setDebugLog] = useState<string[]>([]);
   const [kartStyles, setKartStyles] = useState<Map<string, KartStyle>>(new Map());
   const [kartStats, setKartStats] = useState<KartStats[]>([]);
+  const [savedDrivers, setSavedDrivers] = useState<SavedDriver[]>([]);
   
   const wsRef = useRef<WebSocket | null>(null);
   const driversMapRef = useRef<Map<string, Driver>>(new Map());
@@ -70,11 +73,31 @@ export const useRaceData = (): UseRaceDataReturn => {
     setKartStats(statsArray);
   }, []);
 
+  const sendLapTimeToServer = useCallback(async (kartNumber: string, kartClass: string, timeMs: number, timeDisplay: string, driverName: string) => {
+    try {
+      await fetch(`${API_URL}/lap-time`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kartNumber,
+          kartClass,
+          timeMs: Math.round(timeMs),
+          timeDisplay,
+          driverName
+        })
+      });
+    } catch (error) {
+      console.error('Failed to send lap time to server:', error);
+    }
+  }, []);
+
   const recordKartLapTime = useCallback((kartNumber: string, kartClass: string, lapTimeStr: string, driverName: string) => {
     if (!kartNumber || !lapTimeStr || lapTimeStr === '-') return;
     
     const lapTimeMs = parseLapTimeToMs(lapTimeStr);
     if (lapTimeMs === Infinity) return;
+    
+    sendLapTimeToServer(kartNumber, kartClass, lapTimeMs, lapTimeStr, driverName);
     
     let stats = kartStatsRef.current.get(kartNumber);
     
@@ -109,7 +132,7 @@ export const useRaceData = (): UseRaceDataReturn => {
     
     kartStatsRef.current.set(kartNumber, stats);
     updateKartStats();
-  }, [updateKartStats]);
+  }, [updateKartStats, sendLapTimeToServer]);
 
   const updateDriversList = useCallback(() => {
     const sorted = Array.from(driversMapRef.current.values())
@@ -344,6 +367,58 @@ export const useRaceData = (): UseRaceDataReturn => {
   }, [addDebugLog, parseGrid, updateCell, updatePosition, triggerFlash]);
 
   useEffect(() => {
+    const loadKartStatsFromServer = async () => {
+      try {
+        const response = await fetch(`${API_URL}/kart-stats`);
+        if (response.ok) {
+          const serverStats = await response.json();
+          serverStats.forEach((stat: any) => {
+            kartStatsRef.current.set(stat.kartNumber, {
+              kartNumber: stat.kartNumber,
+              kartClass: stat.kartClass || '',
+              bestLapTime: stat.bestLapTime,
+              bestLapDisplay: stat.bestLapDisplay,
+              allLapTimes: [stat.bestLapTime],
+              lapCount: stat.lapCount,
+              averageLapTime: stat.bestLapTime,
+              lastDriver: stat.bestLapDriver,
+              bestLapDriver: stat.bestLapDriver,
+            });
+          });
+          updateKartStats();
+          addDebugLog(`Loaded ${serverStats.length} kart stats from server`);
+        }
+      } catch (error) {
+        console.error('Failed to load kart stats from server:', error);
+        addDebugLog('Failed to load kart stats from server');
+      }
+    };
+
+    loadKartStatsFromServer();
+  }, [addDebugLog, updateKartStats]);
+
+  // Fetch all saved drivers from database
+  useEffect(() => {
+    const loadSavedDrivers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/drivers`);
+        if (response.ok) {
+          const drivers = await response.json();
+          setSavedDrivers(drivers);
+          addDebugLog(`Loaded ${drivers.length} saved drivers from server`);
+        }
+      } catch (error) {
+        console.error('Failed to load saved drivers:', error);
+      }
+    };
+
+    loadSavedDrivers();
+    // Refresh saved drivers every 30 seconds
+    const interval = setInterval(loadSavedDrivers, 30000);
+    return () => clearInterval(interval);
+  }, [addDebugLog]);
+
+  useEffect(() => {
     const ws = new WebSocket(WEBSOCKET_URL);
     wsRef.current = ws;
 
@@ -382,5 +457,6 @@ export const useRaceData = (): UseRaceDataReturn => {
     debugLog,
     kartStyles,
     kartStats,
+    savedDrivers,
   };
 };
