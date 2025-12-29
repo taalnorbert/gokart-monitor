@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import type { Driver, KartStyle, SavedDriver } from '../../types';
 import { getCellStyle, getStatusStyle } from '../../utils/kartColors';
 import './DriverTracker.css';
@@ -19,6 +19,11 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
   savedDrivers = []
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Combine current race drivers with saved drivers (without duplicates)
   const allDriverOptions = useMemo(() => {
@@ -49,6 +54,68 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
     return options;
   }, [drivers, savedDrivers]);
 
+  // Filter drivers based on search query
+  const filteredDrivers = useMemo(() => {
+    if (!searchQuery.trim()) return allDriverOptions;
+    const query = searchQuery.toLowerCase();
+    return allDriverOptions.filter(d => d.name.toLowerCase().includes(query));
+  }, [allDriverOptions, searchQuery]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelectDriver = (driverName: string) => {
+    onFollowDriver(driverName);
+    setSearchQuery('');
+    setIsDropdownOpen(false);
+    setHighlightedIndex(-1);
+  };
+
+  const handleClearSelection = () => {
+    onFollowDriver(null);
+    setSearchQuery('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isDropdownOpen) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+        setIsDropdownOpen(true);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev => 
+          prev < filteredDrivers.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev => prev > 0 ? prev - 1 : 0);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (highlightedIndex >= 0 && filteredDrivers[highlightedIndex]) {
+          handleSelectDriver(filteredDrivers[highlightedIndex].name);
+        }
+        break;
+      case 'Escape':
+        setIsDropdownOpen(false);
+        setHighlightedIndex(-1);
+        break;
+    }
+  };
+
   const trackedDriver = followedDriver 
     ? drivers.find(d => d.name === followedDriver) 
     : null;
@@ -69,12 +136,94 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
         <span className="driver-tracker__icon">👤</span>
         <span className="driver-tracker__title">Pilóta Követés</span>
         
+        <div className="driver-tracker__search-container" ref={dropdownRef}>
+          <div className="driver-tracker__search-input-wrapper">
+            <input
+              ref={inputRef}
+              type="text"
+              className="driver-tracker__search-input"
+              placeholder={followedDriver || "Keresés név alapján..."}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsDropdownOpen(true);
+                setHighlightedIndex(-1);
+              }}
+              onFocus={() => setIsDropdownOpen(true)}
+              onKeyDown={handleKeyDown}
+            />
+            {followedDriver && (
+              <button 
+                className="driver-tracker__clear-btn"
+                onClick={handleClearSelection}
+                title="Követés törlése"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          
+          {isDropdownOpen && (
+            <div className="driver-tracker__dropdown">
+              {filteredDrivers.length === 0 ? (
+                <div className="driver-tracker__dropdown-empty">
+                  Nincs találat
+                </div>
+              ) : (
+                <>
+                  {filteredDrivers.some(d => d.inRace) && (
+                    <div className="driver-tracker__dropdown-group">
+                      <div className="driver-tracker__dropdown-label">🏁 Aktuális futam</div>
+                      {filteredDrivers.filter(d => d.inRace).map((driver) => {
+                        const globalIdx = filteredDrivers.findIndex(d => d.name === driver.name);
+                        return (
+                          <div
+                            key={driver.name}
+                            className={`driver-tracker__dropdown-item ${highlightedIndex === globalIdx ? 'driver-tracker__dropdown-item--highlighted' : ''} ${followedDriver === driver.name ? 'driver-tracker__dropdown-item--selected' : ''}`}
+                            onClick={() => handleSelectDriver(driver.name)}
+                            onMouseEnter={() => setHighlightedIndex(globalIdx)}
+                          >
+                            <span className="driver-tracker__dropdown-position">#{driver.position}</span>
+                            <span className="driver-tracker__dropdown-name">{driver.name}</span>
+                            <span className="driver-tracker__dropdown-kart">Kart {driver.kartNumber}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {filteredDrivers.some(d => !d.inRace) && (
+                    <div className="driver-tracker__dropdown-group">
+                      <div className="driver-tracker__dropdown-label">📊 Korábbi pilóták</div>
+                      {filteredDrivers.filter(d => !d.inRace).map((driver) => {
+                        const globalIdx = filteredDrivers.findIndex(d => d.name === driver.name);
+                        return (
+                          <div
+                            key={driver.name}
+                            className={`driver-tracker__dropdown-item ${highlightedIndex === globalIdx ? 'driver-tracker__dropdown-item--highlighted' : ''} ${followedDriver === driver.name ? 'driver-tracker__dropdown-item--selected' : ''}`}
+                            onClick={() => handleSelectDriver(driver.name)}
+                            onMouseEnter={() => setHighlightedIndex(globalIdx)}
+                          >
+                            <span className="driver-tracker__dropdown-name">{driver.name}</span>
+                            {driver.bestLapDisplay && (
+                              <span className="driver-tracker__dropdown-best">Best: {driver.bestLapDisplay}</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
         <select 
           className="driver-tracker__select"
           value={followedDriver || ''}
           onChange={(e) => onFollowDriver(e.target.value || null)}
         >
-          <option value="">-- Válassz pilótát --</option>
+          <option value="">-- Lista --</option>
           {allDriverOptions.length > 0 && drivers.length > 0 && (
             <optgroup label="🏁 Aktuális futam">
               {allDriverOptions.filter(d => d.inRace).map(driver => (

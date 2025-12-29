@@ -152,15 +152,9 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
           <h4 className="legend__section-title">🏎️ Kart Rangsor jelzések</h4>
           <div className="legend__colors">
             <div className="legend__color-item">
-              <span className="legend__kart-active-sample">🏁</span>
+              <span className="legend__kart-active-sample"></span>
               <span className="legend__color-text">
-                <strong>Futamban</strong> - A kart jelenleg aktív a pályán (kék kiemelés)
-              </span>
-            </div>
-            <div className="legend__color-item">
-              <span className="legend__kart-inactive-sample"></span>
-              <span className="legend__color-text">
-                <strong>Nem aktív</strong> - A kart nincs az aktuális futamban (normál megjelenés)
+                <strong>Kék háttér</strong> - A kart jelenleg aktív a pályán
               </span>
             </div>
           </div>

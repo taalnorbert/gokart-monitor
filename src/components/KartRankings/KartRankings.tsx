@@ -61,7 +61,6 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
                   {index === 2 && '🥉'}
                   {index > 2 && `#${index + 1}`}
                 </span>
-                {isActive && <span className="kart-rankings__active-badge">🏁</span>}
                 
                 <span 
                   className="kart-rankings__kart-badge"
