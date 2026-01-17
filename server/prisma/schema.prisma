@@ -15,24 +15,33 @@ datasource db {
 
 model Kart {
   id            String    @id @default(cuid())
-  kartNumber    String    @unique
+  kartNumber    String
   kartClass     String?
+  trackId       String    @default("default")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lapTimes      LapTime[]
+  
+  @@unique([kartNumber, trackId])
+  @@index([trackId])
 }
 
 model Driver {
   id            String    @id @default(cuid())
-  name          String    @unique
+  name          String
+  trackId       String    @default("default")
   createdAt     DateTime  @default(now())
   lapTimes      LapTime[]
+  
+  @@unique([name, trackId])
+  @@index([trackId])
 }
 
 model LapTime {
   id            String    @id @default(cuid())
   timeMs        Int
   timeDisplay   String
+  trackId       String    @default("default")
   createdAt     DateTime  @default(now())
   
   kartId        String
@@ -44,16 +53,21 @@ model LapTime {
   @@index([kartId])
   @@index([driverId])
   @@index([createdAt])
+  @@index([trackId])
 }
 
 model KartBestLap {
   id            String    @id @default(cuid())
-  kartNumber    String    @unique
+  kartNumber    String
   kartClass     String?
+  trackId       String    @default("default")
   bestLapTime   Int
   bestLapDisplay String
   bestLapDriver String
   lapCount      Int       @default(1)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  @@unique([kartNumber, trackId])
+  @@index([trackId])
 }

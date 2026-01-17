@@ -90,13 +90,14 @@ export const useRaceData = (trackId: TrackId = 'default'): UseRaceDataReturn => 
           kartClass,
           timeMs: Math.round(timeMs),
           timeDisplay,
-          driverName
+          driverName,
+          trackId
         })
       });
     } catch (error) {
       console.error('Failed to send lap time to server:', error);
     }
-  }, []);
+  }, [trackId]);
 
   const recordKartLapTime = useCallback((kartNumber: string, kartClass: string, lapTimeStr: string, driverName: string) => {
     if (!kartNumber || !lapTimeStr || lapTimeStr === '-') return;
@@ -376,7 +377,7 @@ export const useRaceData = (trackId: TrackId = 'default'): UseRaceDataReturn => 
   useEffect(() => {
     const loadKartStatsFromServer = async () => {
       try {
-        const response = await fetch(`${API_BASE}/kart-stats`);
+        const response = await fetch(`${API_BASE}/kart-stats?trackId=${trackId}`);
         if (response.ok) {
           const serverStats = await response.json();
           serverStats.forEach((stat: any) => {
@@ -402,13 +403,13 @@ export const useRaceData = (trackId: TrackId = 'default'): UseRaceDataReturn => 
     };
 
     loadKartStatsFromServer();
-  }, [addDebugLog, updateKartStats]);
+  }, [addDebugLog, updateKartStats, trackId]);
 
   // Fetch all saved drivers from database
   useEffect(() => {
     const loadSavedDrivers = async () => {
       try {
-        const response = await fetch(`${API_BASE}/drivers`);
+        const response = await fetch(`${API_BASE}/drivers?trackId=${trackId}`);
         if (response.ok) {
           const drivers = await response.json();
           setSavedDrivers(drivers);
@@ -423,7 +424,7 @@ export const useRaceData = (trackId: TrackId = 'default'): UseRaceDataReturn => 
     // Refresh saved drivers every 30 seconds
     const interval = setInterval(loadSavedDrivers, 30000);
     return () => clearInterval(interval);
-  }, [addDebugLog]);
+  }, [addDebugLog, trackId]);
 
   useEffect(() => {
     const selectedTrack = Object.values(TRACKS).find(t => t.id === trackId) || TRACKS.DEFAULT;

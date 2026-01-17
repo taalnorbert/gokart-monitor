@@ -11,7 +11,9 @@ app.use(express.json());
 
 app.get('/api/kart-stats', async (req, res) => {
   try {
+    const trackId = req.query.trackId as string || 'default';
     const stats = await prisma.kartBestLap.findMany({
+      where: { trackId },
       orderBy: { bestLapTime: 'asc' }
     });
     res.json(stats);
@@ -23,23 +25,31 @@ app.get('/api/kart-stats', async (req, res) => {
 
 app.post('/api/lap-time', async (req, res) => {
   try {
-    const { kartNumber, kartClass, timeMs, timeDisplay, driverName } = req.body;
+    const { kartNumber, kartClass, timeMs, timeDisplay, driverName, trackId = 'default' } = req.body;
 
     if (!kartNumber || !timeMs || !timeDisplay || !driverName) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    let kart = await prisma.kart.findUnique({ where: { kartNumber } });
+    let kart = await prisma.kart.findUnique({ 
+      where: { 
+        kartNumber_trackId: { kartNumber, trackId }
+      } 
+    });
     if (!kart) {
       kart = await prisma.kart.create({
-        data: { kartNumber, kartClass: kartClass || null }
+        data: { kartNumber, kartClass: kartClass || null, trackId }
       });
     }
 
-    let driver = await prisma.driver.findUnique({ where: { name: driverName } });
+    let driver = await prisma.driver.findUnique({ 
+      where: { 
+        name_trackId: { name: driverName, trackId }
+      } 
+    });
     if (!driver) {
       driver = await prisma.driver.create({
-        data: { name: driverName }
+        data: { name: driverName, trackId }
       });
     }
 
@@ -47,13 +57,16 @@ app.post('/api/lap-time', async (req, res) => {
       data: {
         timeMs,
         timeDisplay,
+        trackId,
         kartId: kart.id,
         driverId: driver.id
       }
     });
 
     const existingBest = await prisma.kartBestLap.findUnique({
-      where: { kartNumber }
+      where: { 
+        kartNumber_trackId: { kartNumber, trackId }
+      }
     });
 
     if (!existingBest) {
@@ -61,6 +74,7 @@ app.post('/api/lap-time', async (req, res) => {
         data: {
           kartNumber,
           kartClass: kartClass || null,
+          trackId,
           bestLapTime: timeMs,
           bestLapDisplay: timeDisplay,
           bestLapDriver: driverName,
@@ -83,7 +97,9 @@ app.post('/api/lap-time', async (req, res) => {
       }
 
       await prisma.kartBestLap.update({
-        where: { kartNumber },
+        where: { 
+          kartNumber_trackId: { kartNumber, trackId }
+        },
         data: updateData
       });
     }
@@ -97,7 +113,9 @@ app.post('/api/lap-time', async (req, res) => {
 
 app.get('/api/drivers', async (req, res) => {
   try {
+    const trackId = req.query.trackId as string || 'default';
     const drivers = await prisma.driver.findMany({
+      where: { trackId },
       orderBy: { name: 'asc' },
       include: {
         lapTimes: {
@@ -135,11 +153,15 @@ app.get('/api/drivers', async (req, res) => {
 app.get('/api/driver/:name', async (req, res) => {
   try {
     const { name } = req.params;
+    const trackId = req.query.trackId as string || 'default';
     
     const driver = await prisma.driver.findUnique({
-      where: { name },
+      where: { 
+        name_trackId: { name, trackId }
+      },
       include: {
         lapTimes: {
+          where: { trackId },
           include: { kart: true },
           orderBy: { createdAt: 'desc' },
           take: 50
@@ -152,7 +174,10 @@ app.get('/api/driver/:name', async (req, res) => {
     }
 
     const bestLap = await prisma.lapTime.findFirst({
-      where: { driverId: driver.id },
+      where: { 
+        driverId: driver.id,
+        trackId
+      },
       orderBy: { timeMs: 'asc' },
       include: { kart: true }
     });
@@ -171,11 +196,15 @@ app.get('/api/driver/:name', async (req, res) => {
 app.get('/api/kart/:kartNumber', async (req, res) => {
   try {
     const { kartNumber } = req.params;
+    const trackId = req.query.trackId as string || 'default';
     
     const kart = await prisma.kart.findUnique({
-      where: { kartNumber },
+      where: { 
+        kartNumber_trackId: { kartNumber, trackId }
+      },
       include: {
         lapTimes: {
+          where: { trackId },
           include: { driver: true },
           orderBy: { createdAt: 'desc' },
           take: 50
@@ -188,13 +217,18 @@ app.get('/api/kart/:kartNumber', async (req, res) => {
     }
 
     const bestLap = await prisma.lapTime.findFirst({
-      where: { kartId: kart.id },
+      where: { 
+        kartId: kart.id,
+        trackId
+      },
       orderBy: { timeMs: 'asc' },
       include: { driver: true }
     });
 
     const kartBestInfo = await prisma.kartBestLap.findUnique({
-      where: { kartNumber }
+      where: { 
+        kartNumber_trackId: { kartNumber, trackId }
+      }
     });
 
     // Get unique drivers who drove this kart
