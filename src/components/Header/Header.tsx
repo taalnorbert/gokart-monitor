@@ -24,7 +24,6 @@ export const Header: React.FC<HeaderProps> = ({
   lightStatus = '',
   selectedTrack,
   onTrackChange
-  lightStatus = ''
 }) => {
   const isConnected = connectionStatus === 'connected';
   const [showResetModal, setShowResetModal] = useState(false);
