@@ -1,9 +1,8 @@
-services:
-  # PostgreSQL adatbázis
-  - type: pserv
-    name: gokart-db
+databases:
+  - name: gokart-db
     plan: free
-    
+
+services:
   # Backend API (Express + Prisma)
   - type: web
     name: gokart-api
