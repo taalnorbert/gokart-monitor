@@ -38,7 +38,6 @@ export const Header: React.FC<HeaderProps> = ({
       });
       
       if (response.ok) {
-        const data = await response.json();
         const trackName = TRACKS[Object.keys(TRACKS).find(k => TRACKS[k as keyof typeof TRACKS].id === selectedTrack) as keyof typeof TRACKS]?.name || selectedTrack;
         alert(`Minden adat sikeresen törölve (${trackName})!`);
         setShowResetModal(false);
