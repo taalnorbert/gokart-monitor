@@ -47,7 +47,7 @@ const parseLapTimeToMs = (timeStr: string): number => {
   return seconds * 1000;
 };
 
-export const useRaceData = (trackId: TrackId = 'default'): UseRaceDataReturn => {
+export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [raceInfo, setRaceInfo] = useState<RaceInfo>({
     title1: '',
