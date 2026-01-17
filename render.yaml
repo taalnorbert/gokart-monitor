@@ -3,8 +3,6 @@ services:
   - type: pserv
     name: gokart-db
     plan: free
-    databaseName: gokart
-    databaseUser: gokart
     
   # Backend API (Express + Prisma)
   - type: web
