@@ -427,6 +427,24 @@ export const useRaceData = (trackId: TrackId = 'default'): UseRaceDataReturn => 
   }, [addDebugLog, trackId]);
 
   useEffect(() => {
+    // Clear all data when switching tracks
+    driversMapRef.current.clear();
+    setDrivers([]);
+    kartStylesRef.current.clear();
+    setKartStyles(new Map());
+    kartStatsRef.current.clear();
+    setKartStats([]);
+    setRaceInfo({
+      title1: '',
+      title2: '',
+      track: '',
+      message: '',
+      countdown: 0,
+      lightStatus: '',
+      comments: '',
+    });
+    addDebugLog(`Switching to track: ${trackId}`);
+
     const selectedTrack = Object.values(TRACKS).find(t => t.id === trackId) || TRACKS.DEFAULT;
     const ws = new WebSocket(selectedTrack.websocket);
     wsRef.current = ws;
