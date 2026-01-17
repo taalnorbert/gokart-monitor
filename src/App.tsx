@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Header, MessageBanner, DebugPanel, Leaderboard, KartRankings, Legend, DriverTracker } from './components';
-import { useRaceData } from './hooks/useRaceData';
+import { useRaceData, type TrackId } from './hooks/useRaceData';
 import './styles/global.css';
 import './App.css';
 
 const App: React.FC = () => {
-  const { drivers, raceInfo, connectionStatus, debugLog, kartStyles, kartStats, savedDrivers } = useRaceData();
+  const [selectedTrack, setSelectedTrack] = useState<TrackId>('default');
+  const { drivers, raceInfo, connectionStatus, debugLog, kartStyles, kartStats, savedDrivers } = useRaceData(selectedTrack);
   const [followedDriver, setFollowedDriver] = useState<string | null>(null);
 
   return (
@@ -17,6 +18,8 @@ const App: React.FC = () => {
           connectionStatus={connectionStatus}
           countdown={raceInfo.countdown}
           lightStatus={raceInfo.lightStatus}
+          selectedTrack={selectedTrack}
+          onTrackChange={setSelectedTrack}
         />
 
         <MessageBanner message={raceInfo.message} />

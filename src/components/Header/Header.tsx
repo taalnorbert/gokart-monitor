@@ -3,6 +3,7 @@ import type { ConnectionStatus } from '../../types';
 import { CountdownTimer } from '../CountdownTimer';
 import { RaceLights } from '../RaceLights';
 import { Modal } from '../Modal';
+import { TRACKS, type TrackId } from '../../hooks/useRaceData';
 import './Header.css';
 
 interface HeaderProps {
@@ -11,6 +12,8 @@ interface HeaderProps {
   connectionStatus: ConnectionStatus;
   countdown?: number;
   lightStatus?: string;
+  selectedTrack: TrackId;
+  onTrackChange: (trackId: TrackId) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -18,6 +21,9 @@ export const Header: React.FC<HeaderProps> = ({
   track, 
   connectionStatus, 
   countdown = 0,
+  lightStatus = '',
+  selectedTrack,
+  onTrackChange
   lightStatus = ''
 }) => {
   const isConnected = connectionStatus === 'connected';
@@ -58,11 +64,25 @@ export const Header: React.FC<HeaderProps> = ({
               {title || 'APEX Timing'}
             </h1>
           </div>
-          {track && (
-            <p className="header__track">
-              📍 {track}
-            </p>
-          )}
+          <div className="header__track-row">
+            {track && (
+              <p className="header__track">
+                📍 {track}
+              </p>
+            )}
+            <select 
+              className="header__track-selector"
+              value={selectedTrack}
+              onChange={(e) => onTrackChange(e.target.value as TrackId)}
+              title="Pálya választás"
+            >
+              {Object.values(TRACKS).map(t => (
+                <option key={t.id} value={t.id}>
+                  🏁 {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         
         <div className="header__right">

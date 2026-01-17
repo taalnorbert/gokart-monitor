@@ -11,7 +11,13 @@ interface UseRaceDataReturn {
   savedDrivers: SavedDriver[];
 }
 
-const WEBSOCKET_URL = 'wss://www.apex-timing.com:9703/';
+export const TRACKS = {
+  DEFAULT: { name: 'Default Track', websocket: 'wss://www.apex-timing.com:9703/', id: 'default' },
+  SLOVAKIARING: { name: 'Slovakiaring', websocket: 'wss://www.apex-timing.com:8533/', id: 'slovakiaring' }
+} as const;
+
+export type TrackId = typeof TRACKS[keyof typeof TRACKS]['id'];
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const API_BASE = `${API_URL}/api`;
 
@@ -41,7 +47,7 @@ const parseLapTimeToMs = (timeStr: string): number => {
   return seconds * 1000;
 };
 
-export const useRaceData = (): UseRaceDataReturn => {
+export const useRaceData = (trackId: TrackId = 'default'): UseRaceDataReturn => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [raceInfo, setRaceInfo] = useState<RaceInfo>({
     title1: '',
@@ -420,13 +426,14 @@ export const useRaceData = (): UseRaceDataReturn => {
   }, [addDebugLog]);
 
   useEffect(() => {
-    const ws = new WebSocket(WEBSOCKET_URL);
+    const selectedTrack = Object.values(TRACKS).find(t => t.id === trackId) || TRACKS.DEFAULT;
+    const ws = new WebSocket(selectedTrack.websocket);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
+      console.log(`WebSocket connected to ${selectedTrack.name}`);
       setConnectionStatus('connected');
-      addDebugLog('WebSocket connected');
+      addDebugLog(`Connected to ${selectedTrack.name}`);
     };
 
     ws.onmessage = (event) => {
@@ -449,7 +456,7 @@ export const useRaceData = (): UseRaceDataReturn => {
     return () => {
       ws.close();
     };
-  }, [addDebugLog, processMessages]);
+  }, [addDebugLog, processMessages, trackId]);
 
   return {
     drivers,

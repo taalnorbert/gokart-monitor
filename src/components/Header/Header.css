@@ -47,6 +47,42 @@
   gap: 0.5rem;
 }
 
+.header__track-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.header__track-selector {
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  color: #ffd700;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.header__track-selector:hover {
+  background: rgba(255, 215, 0, 0.25);
+  border-color: rgba(255, 215, 0, 0.5);
+}
+
+.header__track-selector:focus {
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+}
+
+.header__track-selector option {
+  background: #1a1a2e;
+  color: #fff;
+}
+
 .header__right {
   display: flex;
   align-items: center;
