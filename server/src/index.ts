@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
+import { startWorker } from './worker';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -341,6 +342,10 @@ setInterval(runCleanup, 60 * 60 * 1000);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   runCleanup();
+  
+  // Start WebSocket worker for continuous track monitoring
+  console.log('🚀 Starting WebSocket worker...');
+  startWorker();
 });
 
 process.on('beforeExit', async () => {

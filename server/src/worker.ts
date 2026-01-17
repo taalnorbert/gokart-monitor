@@ -330,39 +330,49 @@ class TrackMonitor {
 }
 
 // Main worker process
-async function main() {
-  console.log('🚀 GoKart Monitor Worker Starting...');
-  console.log(`📅 ${new Date().toLocaleString('hu-HU')}`);
+export async function startWorker() {
+  console.log('');
+  console.log(`✅ Monitoring ${TRACKS.length} tracks:`);
+  TRACKS.forEach(track => console.log(`   - ${track.name} (${track.id})`));
   console.log('');
 
   const monitors = TRACKS.map(track => new TrackMonitor(track));
   
   monitors.forEach(monitor => monitor.start());
 
-  console.log('');
-  console.log(`✅ Monitoring ${TRACKS.length} tracks:`);
-  TRACKS.forEach(track => console.log(`   - ${track.name} (${track.id})`));
-  console.log('');
-  console.log('Press Ctrl+C to stop...');
-
   // Graceful shutdown
-  process.on('SIGINT', async () => {
-    console.log('\n\n🛑 Shutting down...');
+  const shutdown = async () => {
+    console.log('\n\n🛑 Shutting down worker...');
     monitors.forEach(monitor => monitor.stop());
-    await prisma.$disconnect();
-    process.exit(0);
-  });
+  };
 
-  process.on('SIGTERM', async () => {
-    console.log('\n\n🛑 Shutting down...');
-    monitors.forEach(monitor => monitor.stop());
-    await prisma.$disconnect();
-    process.exit(0);
-  });
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+  
+  return monitors;
 }
 
-main().catch(error => {
-  console.error('❌ Fatal error:', error);
-  prisma.$disconnect();
-  process.exit(1);
-});
+// Standalone execution
+async function main() {
+  console.log('🚀 GoKart Monitor Worker Starting...');
+  console.log(`📅 ${new Date().toLocaleString('hu-HU')}`);
+  
+  await startWorker();
+  
+  console.log('Press Ctrl+C to stop...');
+}
+
+// Only run main if executed directly
+if (require.main === module) {
+  const prisma = new PrismaClient();
+  
+  main().catch(error => {
+    console.error('❌ Fatal error:', error);
+    prisma.$disconnect();
+    process.exit(1);
+  });
+  
+  process.on('beforeExit', async () => {
+    await prisma.$disconnect();
+  });
+}
