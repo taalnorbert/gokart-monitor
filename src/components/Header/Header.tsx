@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import type { ConnectionStatus } from '../../types';
 import { CountdownTimer } from '../CountdownTimer';
 import { RaceLights } from '../RaceLights';
+import { Modal } from '../Modal';
 import './Header.css';
 
 interface HeaderProps {
@@ -19,6 +21,32 @@ export const Header: React.FC<HeaderProps> = ({
   lightStatus = ''
 }) => {
   const isConnected = connectionStatus === 'connected';
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleReset = async () => {
+    try {
+      setIsResetting(true);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_BASE_URL}/api/reset`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        alert('✅ Minden adat sikeresen törölve!');
+        setShowResetModal(false);
+        // Reload oldal hogy frissüljenek az adatok
+        window.location.reload();
+      } else {
+        alert('❌ Hiba történt a törlés során');
+      }
+    } catch (error) {
+      console.error('Reset error:', error);
+      alert('❌ Hiba történt a törlés során');
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   return (
     <header className="header">
@@ -51,8 +79,52 @@ export const Header: React.FC<HeaderProps> = ({
               {isConnected ? 'LIVE' : connectionStatus === 'connecting' ? 'CONNECTING...' : 'DISCONNECTED'}
             </span>
           </div>
+          
+          <button
+            className="header__reset-btn"
+            onClick={() => setShowResetModal(true)}
+            title="Minden adat törlése"
+          >
+            🗑️ Reset
+          </button>
         </div>
       </div>
+      
+      {showResetModal && (
+        <Modal
+          isOpen={showResetModal}
+          onClose={() => setShowResetModal(false)}
+          title="⚠️ Minden adat törlése"
+        >
+          <div className="header__reset-modal">
+            <p className="header__reset-warning">
+              Biztos törölni szeretned <strong>minden adatot</strong> az adatbázisból?
+            </p>
+            <ul className="header__reset-list">
+              <li>❌ Minden köridő törlődik</li>
+              <li>❌ Minden vezető törlődik</li>
+              <li>❌ Minden kart statisztika törlődik</li>
+              <li>❌ Ez a művelet <strong>visszafordíthatatlan</strong>!</li>
+            </ul>
+            <div className="header__reset-actions">
+              <button
+                className="header__reset-cancel"
+                onClick={() => setShowResetModal(false)}
+                disabled={isResetting}
+              >
+                Mégsem
+              </button>
+              <button
+                className="header__reset-confirm"
+                onClick={handleReset}
+                disabled={isResetting}
+              >
+                {isResetting ? 'Törlés...' : '✅ Igen, törölj mindent'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </header>
   );
 };

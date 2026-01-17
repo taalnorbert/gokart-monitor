@@ -100,6 +100,113 @@
   }
 }
 
+.header__reset-btn {
+  padding: 0.4rem 0.875rem;
+  background: rgba(255, 68, 68, 0.15);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  border-radius: 30px;
+  color: #ff6b6b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.header__reset-btn:hover {
+  background: rgba(255, 68, 68, 0.25);
+  border-color: rgba(255, 68, 68, 0.5);
+  transform: translateY(-1px);
+}
+
+.header__reset-btn:active {
+  transform: translateY(0);
+}
+
+.header__reset-modal {
+  padding: 0.5rem 0;
+}
+
+.header__reset-warning {
+  font-size: 1rem;
+  color: #ddd;
+  margin: 0 0 1.25rem;
+  line-height: 1.6;
+}
+
+.header__reset-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.header__reset-list li {
+  padding: 0.5rem 0;
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header__reset-list li:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+.header__reset-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.header__reset-cancel,
+.header__reset-confirm {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.header__reset-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.header__reset-cancel:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.header__reset-confirm {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff6b6b;
+  border-color: rgba(255, 68, 68, 0.4);
+}
+
+.header__reset-confirm:hover:not(:disabled) {
+  background: rgba(255, 68, 68, 0.3);
+  border-color: rgba(255, 68, 68, 0.6);
+  transform: translateY(-1px);
+}
+
+.header__reset-cancel:disabled,
+.header__reset-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .header__content {
     padding: 1rem 1.25rem;

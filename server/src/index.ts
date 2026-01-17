@@ -217,13 +217,31 @@ app.delete('/api/cleanup', async (req, res) => {
   try {
     const cutoffDate = new Date(Date.now() - 48 * 60 * 60 * 1000);
 
-    const deleted = await prisma.lapTime.deleteMany({
+    const deletedLapTimes = await prisma.lapTime.deleteMany({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+    
+    const deletedDrivers = await prisma.driver.deleteMany({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+    
+    const deletedKarts = await prisma.kart.deleteMany({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+    
+    const deletedKartStats = await prisma.kartBestLap.deleteMany({
       where: { createdAt: { lt: cutoffDate } }
     });
 
     res.json({ 
-      success: true, 
-      deletedCount: deleted.count,
+      success: true,
+      deletedCounts: {
+        lapTimes: deletedLapTimes.count,
+        drivers: deletedDrivers.count,
+        karts: deletedKarts.count,
+        kartStats: deletedKartStats.count,
+        total: deletedLapTimes.count + deletedDrivers.count + deletedKarts.count + deletedKartStats.count
+      },
       cutoffDate 
     });
   } catch (error) {
@@ -250,12 +268,34 @@ const runCleanup = async () => {
   const cutoffDate = new Date(Date.now() - 48 * 60 * 60 * 1000);
   
   try {
-    const result = await prisma.lapTime.deleteMany({
+    // Töröljük a 48 óránál régebbi köridőket
+    const deletedLapTimes = await prisma.lapTime.deleteMany({
       where: { createdAt: { lt: cutoffDate } }
     });
     
-    if (result.count > 0) {
-      console.log(`Cleanup: Deleted ${result.count} lap times older than 48 hours`);
+    // Töröljük a 48 óránál régebbi vezetőket
+    const deletedDrivers = await prisma.driver.deleteMany({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+    
+    // Töröljük a 48 óránál régebbi kartokat
+    const deletedKarts = await prisma.kart.deleteMany({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+    
+    // Töröljük a 48 óránál régebbi kart statisztikákat
+    const deletedKartStats = await prisma.kartBestLap.deleteMany({
+      where: { createdAt: { lt: cutoffDate } }
+    });
+    
+    const totalDeleted = deletedLapTimes.count + deletedDrivers.count + deletedKarts.count + deletedKartStats.count;
+    
+    if (totalDeleted > 0) {
+      console.log(`Cleanup: Deleted ${totalDeleted} records older than 48 hours`);
+      console.log(`  - Lap times: ${deletedLapTimes.count}`);
+      console.log(`  - Drivers: ${deletedDrivers.count}`);
+      console.log(`  - Karts: ${deletedKarts.count}`);
+      console.log(`  - Kart stats: ${deletedKartStats.count}`);
     }
   } catch (error) {
     console.error('Cleanup error:', error);
