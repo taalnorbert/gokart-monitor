@@ -12,7 +12,8 @@ interface UseRaceDataReturn {
 }
 
 const WEBSOCKET_URL = 'wss://www.apex-timing.com:9703/';
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = `${API_URL}/api`;
 
 const parseCssString = (css: string): KartStyle => {
   const borderMatch = css.match(/border-bottom-color:\s*([^;!]+)/i);
@@ -75,7 +76,7 @@ export const useRaceData = (): UseRaceDataReturn => {
 
   const sendLapTimeToServer = useCallback(async (kartNumber: string, kartClass: string, timeMs: number, timeDisplay: string, driverName: string) => {
     try {
-      await fetch(`${API_URL}/lap-time`, {
+      await fetch(`${API_BASE}/lap-time`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -369,7 +370,7 @@ export const useRaceData = (): UseRaceDataReturn => {
   useEffect(() => {
     const loadKartStatsFromServer = async () => {
       try {
-        const response = await fetch(`${API_URL}/kart-stats`);
+        const response = await fetch(`${API_BASE}/kart-stats`);
         if (response.ok) {
           const serverStats = await response.json();
           serverStats.forEach((stat: any) => {
@@ -401,7 +402,7 @@ export const useRaceData = (): UseRaceDataReturn => {
   useEffect(() => {
     const loadSavedDrivers = async () => {
       try {
-        const response = await fetch(`${API_URL}/drivers`);
+        const response = await fetch(`${API_BASE}/drivers`);
         if (response.ok) {
           const drivers = await response.json();
           setSavedDrivers(drivers);
