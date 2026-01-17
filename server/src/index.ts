@@ -287,12 +287,27 @@ app.delete('/api/cleanup', async (req, res) => {
 
 app.delete('/api/reset', async (req, res) => {
   try {
-    await prisma.lapTime.deleteMany();
-    await prisma.kartBestLap.deleteMany();
-    await prisma.driver.deleteMany();
-    await prisma.kart.deleteMany();
+    const trackId = req.query.trackId as string || 'max60';
+    
+    // Delete only data for the specified track
+    await prisma.lapTime.deleteMany({
+      where: { trackId }
+    });
+    await prisma.kartBestLap.deleteMany({
+      where: { trackId }
+    });
+    await prisma.driver.deleteMany({
+      where: { trackId }
+    });
+    await prisma.kart.deleteMany({
+      where: { trackId }
+    });
 
-    res.json({ success: true, message: 'All data reset' });
+    res.json({ 
+      success: true, 
+      message: `All data reset for track: ${trackId}`,
+      trackId 
+    });
   } catch (error) {
     console.error('Error during reset:', error);
     res.status(500).json({ error: 'Reset failed' });

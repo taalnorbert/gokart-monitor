@@ -33,21 +33,23 @@ export const Header: React.FC<HeaderProps> = ({
     try {
       setIsResetting(true);
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_BASE_URL}/api/reset`, {
+      const response = await fetch(`${API_BASE_URL}/api/reset?trackId=${selectedTrack}`, {
         method: 'DELETE'
       });
       
       if (response.ok) {
-        alert('✅ Minden adat sikeresen törölve!');
+        const data = await response.json();
+        const trackName = TRACKS[Object.keys(TRACKS).find(k => TRACKS[k as keyof typeof TRACKS].id === selectedTrack) as keyof typeof TRACKS]?.name || selectedTrack;
+        alert(`Minden adat sikeresen törölve (${trackName})!`);
         setShowResetModal(false);
         // Reload oldal hogy frissüljenek az adatok
         window.location.reload();
       } else {
-        alert('❌ Hiba történt a törlés során');
+        alert('Hiba történt a törlés során');
       }
     } catch (error) {
       console.error('Reset error:', error);
-      alert('❌ Hiba történt a törlés során');
+      alert('Hiba történt a törlés során');
     } finally {
       setIsResetting(false);
     }
@@ -113,17 +115,17 @@ export const Header: React.FC<HeaderProps> = ({
         <Modal
           isOpen={showResetModal}
           onClose={() => setShowResetModal(false)}
-          title="⚠️ Minden adat törlése"
+          title="⚠️ Pálya adatainak törlése"
         >
           <div className="header__reset-modal">
             <p className="header__reset-warning">
-              Biztos törölni szeretned <strong>minden adatot</strong> az adatbázisból?
+              Biztos törölni szeretnéd <strong>a(z) {TRACKS[Object.keys(TRACKS).find(k => TRACKS[k as keyof typeof TRACKS].id === selectedTrack) as keyof typeof TRACKS]?.name || selectedTrack} pálya</strong> összes adatát az adatbázisból?
             </p>
             <ul className="header__reset-list">
-              <li>❌ Minden köridő törlődik</li>
-              <li>❌ Minden vezető törlődik</li>
-              <li>❌ Minden kart statisztika törlődik</li>
-              <li>❌ Ez a művelet <strong>visszafordíthatatlan</strong>!</li>
+              <li>Minden köridő törlődik (csak ezen a pályán)</li>
+              <li>Minden vezető törlődik (csak ezen a pályán)</li>
+              <li>Minden kart statisztika törlődik (csak ezen a pályán)</li>
+              <li>Ez a művelet <strong>visszafordíthatatlan</strong>!</li>
             </ul>
             <div className="header__reset-actions">
               <button
@@ -138,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={handleReset}
                 disabled={isResetting}
               >
-                {isResetting ? 'Törlés...' : '✅ Igen, törölj mindent'}
+                {isResetting ? 'Törlés...' : 'Igen, törölj mindent'}
               </button>
             </div>
           </div>
