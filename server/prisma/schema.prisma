@@ -17,7 +17,7 @@ model Kart {
   id            String    @id @default(cuid())
   kartNumber    String
   kartClass     String?
-  trackId       String    @default("default")
+  trackId       String    @default("max60")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lapTimes      LapTime[]
@@ -29,7 +29,7 @@ model Kart {
 model Driver {
   id            String    @id @default(cuid())
   name          String
-  trackId       String    @default("default")
+  trackId       String    @default("max60")
   createdAt     DateTime  @default(now())
   lapTimes      LapTime[]
   
@@ -41,7 +41,7 @@ model LapTime {
   id            String    @id @default(cuid())
   timeMs        Int
   timeDisplay   String
-  trackId       String    @default("default")
+  trackId       String    @default("max60")
   createdAt     DateTime  @default(now())
   
   kartId        String
@@ -60,7 +60,7 @@ model KartBestLap {
   id            String    @id @default(cuid())
   kartNumber    String
   kartClass     String?
-  trackId       String    @default("default")
+  trackId       String    @default("max60")
   bestLapTime   Int
   bestLapDisplay String
   bestLapDriver String

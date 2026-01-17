@@ -5,7 +5,7 @@ import './styles/global.css';
 import './App.css';
 
 const App: React.FC = () => {
-  const [selectedTrack, setSelectedTrack] = useState<TrackId>('default');
+  const [selectedTrack, setSelectedTrack] = useState<TrackId>('max60');
   const { drivers, raceInfo, connectionStatus, debugLog, kartStyles, kartStats, savedDrivers } = useRaceData(selectedTrack);
   const [followedDriver, setFollowedDriver] = useState<string | null>(null);
 

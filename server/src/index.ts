@@ -11,7 +11,7 @@ app.use(express.json());
 
 app.get('/api/kart-stats', async (req, res) => {
   try {
-    const trackId = req.query.trackId as string || 'default';
+    const trackId = req.query.trackId as string || 'max60';
     const stats = await prisma.kartBestLap.findMany({
       where: { trackId },
       orderBy: { bestLapTime: 'asc' }
@@ -25,7 +25,7 @@ app.get('/api/kart-stats', async (req, res) => {
 
 app.post('/api/lap-time', async (req, res) => {
   try {
-    const { kartNumber, kartClass, timeMs, timeDisplay, driverName, trackId = 'default' } = req.body;
+    const { kartNumber, kartClass, timeMs, timeDisplay, driverName, trackId = 'max60' } = req.body;
 
     if (!kartNumber || !timeMs || !timeDisplay || !driverName) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -113,7 +113,7 @@ app.post('/api/lap-time', async (req, res) => {
 
 app.get('/api/drivers', async (req, res) => {
   try {
-    const trackId = req.query.trackId as string || 'default';
+    const trackId = req.query.trackId as string || 'max60';
     const drivers = await prisma.driver.findMany({
       where: { trackId },
       orderBy: { name: 'asc' },
@@ -153,7 +153,7 @@ app.get('/api/drivers', async (req, res) => {
 app.get('/api/driver/:name', async (req, res) => {
   try {
     const { name } = req.params;
-    const trackId = req.query.trackId as string || 'default';
+    const trackId = req.query.trackId as string || 'max60';
     
     const driver = await prisma.driver.findUnique({
       where: { 
@@ -196,7 +196,7 @@ app.get('/api/driver/:name', async (req, res) => {
 app.get('/api/kart/:kartNumber', async (req, res) => {
   try {
     const { kartNumber } = req.params;
-    const trackId = req.query.trackId as string || 'default';
+    const trackId = req.query.trackId as string || 'max60';
     
     const kart = await prisma.kart.findUnique({
       where: { 

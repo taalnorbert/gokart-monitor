@@ -12,7 +12,7 @@ interface UseRaceDataReturn {
 }
 
 export const TRACKS = {
-  DEFAULT: { name: 'Default Track', websocket: 'wss://www.apex-timing.com:9703/', id: 'default' },
+  MAX60: { name: 'Max60', websocket: 'wss://www.apex-timing.com:9703/', id: 'max60' },
   SLOVAKIARING: { name: 'Slovakiaring', websocket: 'wss://www.apex-timing.com:8533/', id: 'slovakiaring' }
 } as const;
 
@@ -445,7 +445,7 @@ export const useRaceData = (trackId: TrackId = 'default'): UseRaceDataReturn => 
     });
     addDebugLog(`Switching to track: ${trackId}`);
 
-    const selectedTrack = Object.values(TRACKS).find(t => t.id === trackId) || TRACKS.DEFAULT;
+    const selectedTrack = Object.values(TRACKS).find(t => t.id === trackId) || TRACKS.MAX60;
     const ws = new WebSocket(selectedTrack.websocket);
     wsRef.current = ws;
 
