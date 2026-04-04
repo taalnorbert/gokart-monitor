@@ -106,7 +106,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
 
                 <span className="kart-rankings__driver">
                   <span className="kart-rankings__driver-label">
-                        {isActive ? 'Pilóta' : 'Utolsó pilóta'}
+                    {isActive ? 'Jelenlegi pilóta' : 'Utolsó Pilóta'}
                   </span>
                   <span className="kart-rankings__driver-name">
                         {isActive ? (currentDriverByKart.get(kart.kartNumber) || kart.lastDriver || '-') : (kart.lastDriver || '-')}
