@@ -240,6 +240,9 @@
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
   color: #fff;
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -349,7 +352,7 @@
   }
 
   .kart-rankings__item {
-    grid-template-columns: 32px 42px minmax(90px, 1fr) 90px 48px 74px;
+    grid-template-columns: 32px 42px minmax(100px, 1fr) 92px 110px;
     gap: 0.5rem;
     padding: 0.5rem;
   }
@@ -374,7 +377,7 @@
   }
   
   .kart-rankings__content {
-    padding: 0.75rem;
+    padding: 0.55rem;
   }
 
   .kart-rankings__tab {
@@ -383,8 +386,23 @@
   }
   
   .kart-rankings__item {
-    grid-template-columns: 28px 38px minmax(72px, 1fr) 78px 42px 68px;
+    grid-template-columns: 24px 34px minmax(70px, 1fr) 68px 82px;
+    gap: 0.35rem;
+    padding: 0.4rem;
     font-size: 0.8rem;
+  }
+
+  .kart-rankings__history-btn {
+    font-size: 0.62rem;
+    padding: 0.2rem 0.25rem;
+  }
+
+  .kart-rankings__driver-label {
+    font-size: 0.6rem;
+  }
+
+  .kart-rankings__driver-name {
+    font-size: 0.75rem;
   }
   
   .kart-rankings__time {
