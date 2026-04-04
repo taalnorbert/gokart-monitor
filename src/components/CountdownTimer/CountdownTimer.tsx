@@ -34,7 +34,6 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ initialSeconds }
 
   return (
     <div className={`countdown-timer ${isLow ? 'countdown-timer--low' : ''}`}>
-      <span className="countdown-timer__icon">⏱️</span>
       <span className="countdown-timer__time">{formatTime(seconds)}</span>
     </div>
   );

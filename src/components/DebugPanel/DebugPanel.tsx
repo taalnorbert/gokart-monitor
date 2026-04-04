@@ -16,7 +16,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ logs, driverCount }) => 
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
       >
-        <span className="debug-panel__toggle-icon">{isOpen ? '▼' : '▶'}</span>
+        <span className="debug-panel__toggle-icon">{isOpen ? '-' : '+'}</span>
         <span>Debug Log</span>
         <span className="debug-panel__badge">{driverCount} drivers</span>
       </button>

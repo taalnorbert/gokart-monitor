@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { KartStyle } from '../../types';
+import type { TrackId } from '../../hooks/useRaceData';
 import './DriverLapHistory.css';
 
 interface LapRecord {
@@ -28,6 +29,7 @@ interface DriverLapHistoryProps {
   driverName: string;
   kartStyles: Map<string, KartStyle>;
   onClose?: () => void;
+  trackId: TrackId;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -35,7 +37,8 @@ const API_URL = `${API_BASE_URL}/api`;
 
 export const DriverLapHistory: React.FC<DriverLapHistoryProps> = ({ 
   driverName, 
-  kartStyles
+  kartStyles,
+  trackId
 }) => {
   const [data, setData] = useState<DriverDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +48,7 @@ export const DriverLapHistory: React.FC<DriverLapHistoryProps> = ({
     const fetchDriverData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/driver/${encodeURIComponent(driverName)}`);
+        const response = await fetch(`${API_URL}/driver/${encodeURIComponent(driverName)}?trackId=${trackId}`);
         if (!response.ok) {
           throw new Error('Nem sikerült betölteni az adatokat');
         }
@@ -59,7 +62,7 @@ export const DriverLapHistory: React.FC<DriverLapHistoryProps> = ({
     };
 
     fetchDriverData();
-  }, [driverName]);
+  }, [driverName, trackId]);
 
   const getKartStyle = (kartClass: string | null) => {
     if (!kartClass) return { backgroundColor: '#333', color: '#FFF' };
@@ -101,7 +104,7 @@ export const DriverLapHistory: React.FC<DriverLapHistoryProps> = ({
     return (
       <div className="driver-lap-history">
         <div className="driver-lap-history__error">
-          <span className="driver-lap-history__error-icon">⚠️</span>
+          <span className="driver-lap-history__error-icon">Hiba</span>
           <span>{error || 'Nincs adat'}</span>
         </div>
       </div>
@@ -185,7 +188,7 @@ export const DriverLapHistory: React.FC<DriverLapHistoryProps> = ({
                     </td>
                     <td className={`driver-lap-history__cell--time ${isBest ? 'driver-lap-history__cell--time-best' : ''}`}>
                       {lap.timeDisplay}
-                      {isBest && <span className="driver-lap-history__best-badge">🏆</span>}
+                      {isBest && <span className="driver-lap-history__best-badge">Legjobb</span>}
                     </td>
                     <td className="driver-lap-history__cell--delta">
                       {delta && <span className="driver-lap-history__delta">{delta}</span>}

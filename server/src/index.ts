@@ -359,7 +359,7 @@ app.listen(PORT, () => {
   runCleanup();
   
   // Start WebSocket worker for continuous track monitoring
-  console.log('🚀 Starting WebSocket worker...');
+  console.log('Starting WebSocket worker...');
   startWorker();
 });
 

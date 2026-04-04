@@ -11,7 +11,8 @@ interface TrackConfig {
 
 const TRACKS: TrackConfig[] = [
   { id: 'max60', name: 'Max60', websocket: 'wss://www.apex-timing.com:9703/' },
-  { id: 'slovakiaring', name: 'Slovakiaring', websocket: 'wss://www.apex-timing.com:8533/' }
+  { id: 'slovakiaring', name: 'Slovakiaring', websocket: 'wss://www.apex-timing.com:8533/' },
+  { id: 'classicgp', name: 'Classic GP', websocket: 'wss://www.apex-timing.com:10063/' }
 ];
 
 interface KartStats {
@@ -52,7 +53,7 @@ class TrackMonitor {
       this.ws = new WebSocket(this.websocketUrl);
 
       this.ws.on('open', () => {
-        this.log('✅ Connected');
+        this.log('Connected');
         this.reconnectDelay = 5000; // Reset delay on successful connection
       });
 
@@ -66,15 +67,15 @@ class TrackMonitor {
       });
 
       this.ws.on('error', (error) => {
-        this.log(`❌ WebSocket error: ${error.message}`);
+        this.log(`WebSocket error: ${error.message}`);
       });
 
       this.ws.on('close', () => {
-        this.log('⚠️ Disconnected. Reconnecting...');
+        this.log('Disconnected. Reconnecting...');
         this.scheduleReconnect();
       });
     } catch (error) {
-      this.log(`❌ Connection error: ${error}`);
+      this.log(`Connection error: ${error}`);
       this.scheduleReconnect();
     }
   }
@@ -211,7 +212,7 @@ class TrackMonitor {
             lapCount: 1
           }
         });
-        this.log(`🆕 New kart: #${kartNumber} - ${driverName}: ${timeDisplay}`);
+        this.log(`New kart: #${kartNumber} - ${driverName}: ${timeDisplay}`);
       } else {
         const updateData: any = {
           lapCount: existingBest.lapCount + 1
@@ -221,7 +222,7 @@ class TrackMonitor {
           updateData.bestLapTime = Math.round(timeMs);
           updateData.bestLapDisplay = timeDisplay;
           updateData.bestLapDriver = driverName;
-          this.log(`⚡ New best lap: #${kartNumber} - ${driverName}: ${timeDisplay}`);
+          this.log(`New best lap: #${kartNumber} - ${driverName}: ${timeDisplay}`);
         }
 
         if (kartClass) {
@@ -236,7 +237,7 @@ class TrackMonitor {
         });
       }
     } catch (error) {
-      this.log(`❌ Database error: ${error}`);
+      this.log(`Database error: ${error}`);
     }
   }
 
@@ -307,7 +308,7 @@ class TrackMonitor {
     messages.forEach(msg => {
       if (msg.startsWith('init|')) {
         this.driversMap.clear();
-        this.log('🔄 Init received - clearing data');
+          this.log('Init received - clearing data');
       } else if (msg.startsWith('grid||')) {
         const html = msg.substring(6);
         this.parseGrid(html);
@@ -332,7 +333,7 @@ class TrackMonitor {
 // Main worker process
 export async function startWorker() {
   console.log('');
-  console.log(`✅ Monitoring ${TRACKS.length} tracks:`);
+  console.log(`Monitoring ${TRACKS.length} tracks:`);
   TRACKS.forEach(track => console.log(`   - ${track.name} (${track.id})`));
   console.log('');
 
@@ -342,7 +343,7 @@ export async function startWorker() {
 
   // Graceful shutdown
   const shutdown = async () => {
-    console.log('\n\n🛑 Shutting down worker...');
+    console.log('\n\nShutting down worker...');
     monitors.forEach(monitor => monitor.stop());
   };
 
@@ -354,8 +355,8 @@ export async function startWorker() {
 
 // Standalone execution
 async function main() {
-  console.log('🚀 GoKart Monitor Worker Starting...');
-  console.log(`📅 ${new Date().toLocaleString('hu-HU')}`);
+  console.log('GoKart Monitor Worker Starting...');
+  console.log(`${new Date().toLocaleString('hu-HU')}`);
   
   await startWorker();
   
@@ -367,7 +368,7 @@ if (require.main === module) {
   const prisma = new PrismaClient();
   
   main().catch(error => {
-    console.error('❌ Fatal error:', error);
+    console.error('Fatal error:', error);
     prisma.$disconnect();
     process.exit(1);
   });

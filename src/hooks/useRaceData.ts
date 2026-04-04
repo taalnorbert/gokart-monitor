@@ -13,7 +13,8 @@ interface UseRaceDataReturn {
 
 export const TRACKS = {
   MAX60: { name: 'Max60', websocket: 'wss://www.apex-timing.com:9703/', id: 'max60' },
-  SLOVAKIARING: { name: 'Slovakiaring', websocket: 'wss://www.apex-timing.com:8533/', id: 'slovakiaring' }
+  SLOVAKIARING: { name: 'Slovakiaring', websocket: 'wss://www.apex-timing.com:8533/', id: 'slovakiaring' },
+  CLASSICGP: { name: 'Classic GP', websocket: 'wss://www.apex-timing.com:10063/', id: 'classicgp' }
 } as const;
 
 export type TrackId = typeof TRACKS[keyof typeof TRACKS]['id'];
@@ -153,6 +154,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(wrappedHtml, 'text/html');
     const rows = doc.querySelectorAll('tr[data-id]');
+    const isClassicGp = trackId === 'classicgp';
     
     addDebugLog(`Found ${rows.length} rows`);
     
@@ -197,18 +199,22 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         kartNumber: getCell(4),
         kartClass: kartClass,
         name: getCell(5),
-        sector1: getCell(6),
-        sector1Class: getCellClass(6),
-        sector2: getCell(7),
-        sector2Class: getCellClass(7),
-        sector3: getCell(8),
-        sector3Class: getCellClass(8),
-        laps: getCell(9),
-        lapsClass: getCellClass(9),
-        lastLap: getCell(10),
-        lastLapClass: getCellClass(10),
-        bestLap: getCell(11),
-        bestLapClass: getCellClass(11),
+        nationality: isClassicGp ? getCell(6) : '',
+        nationalityClass: isClassicGp ? getCellClass(6) : '',
+        gap: isClassicGp ? getCell(8) : '',
+        gapClass: isClassicGp ? getCellClass(8) : '',
+        sector1: isClassicGp ? '' : getCell(6),
+        sector1Class: isClassicGp ? '' : getCellClass(6),
+        sector2: isClassicGp ? '' : getCell(7),
+        sector2Class: isClassicGp ? '' : getCellClass(7),
+        sector3: isClassicGp ? '' : getCell(8),
+        sector3Class: isClassicGp ? '' : getCellClass(8),
+        laps: isClassicGp ? getCell(10) : getCell(9),
+        lapsClass: isClassicGp ? getCellClass(10) : getCellClass(9),
+        lastLap: isClassicGp ? getCell(9) : getCell(10),
+        lastLapClass: isClassicGp ? getCellClass(9) : getCellClass(10),
+        bestLap: isClassicGp ? getCell(7) : getCell(11),
+        bestLapClass: isClassicGp ? getCellClass(7) : getCellClass(11),
         flashEffect: false,
         flashType: '',
       };
@@ -237,53 +243,99 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     if (!driver) return;
     
     const cellNum = parseInt(cellId.replace('c', ''));
+    const isClassicGp = trackId === 'classicgp';
     
-    switch (cellNum) {
-      case 1:
-        driver.groupClass = cssClass;
-        break;
-      case 2:
-        driver.statusClass = cssClass;
-        break;
-      case 3:
-        driver.rank = value || driver.rank;
-        driver.rankClass = cssClass;
-        break;
-      case 4:
-        driver.kartNumber = value || driver.kartNumber;
-        driver.kartClass = cssClass || driver.kartClass;
-        break;
-      case 5:
-        driver.name = value || driver.name;
-        break;
-      case 6:
-        driver.sector1 = value;
-        driver.sector1Class = cssClass;
-        break;
-      case 7:
-        driver.sector2 = value;
-        driver.sector2Class = cssClass;
-        break;
-      case 8:
-        driver.sector3 = value;
-        driver.sector3Class = cssClass;
-        break;
-      case 9:
-        driver.laps = value || driver.laps;
-        driver.lapsClass = cssClass;
-        break;
-      case 10:
-        driver.lastLap = value;
-        driver.lastLapClass = cssClass;
-        break;
-      case 11:
-        driver.bestLap = value;
-        driver.bestLapClass = cssClass;
-        // Record new best lap time for this kart
-        if (driver.kartNumber && value) {
-          recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
-        }
-        break;
+    if (isClassicGp) {
+      switch (cellNum) {
+        case 1:
+          driver.groupClass = cssClass;
+          break;
+        case 2:
+          driver.statusClass = cssClass;
+          break;
+        case 3:
+          driver.rank = value || driver.rank;
+          driver.rankClass = cssClass;
+          break;
+        case 4:
+          driver.kartNumber = value || driver.kartNumber;
+          driver.kartClass = cssClass || driver.kartClass;
+          break;
+        case 5:
+          driver.name = value || driver.name;
+          break;
+        case 6:
+          driver.nationality = value;
+          driver.nationalityClass = cssClass;
+          break;
+        case 7:
+          driver.bestLap = value;
+          driver.bestLapClass = cssClass;
+          if (driver.kartNumber && value) {
+            recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
+          }
+          break;
+        case 8:
+          driver.gap = value;
+          driver.gapClass = cssClass;
+          break;
+        case 9:
+          driver.lastLap = value;
+          driver.lastLapClass = cssClass;
+          break;
+        case 10:
+          driver.laps = value || driver.laps;
+          driver.lapsClass = cssClass;
+          break;
+      }
+    } else {
+      switch (cellNum) {
+        case 1:
+          driver.groupClass = cssClass;
+          break;
+        case 2:
+          driver.statusClass = cssClass;
+          break;
+        case 3:
+          driver.rank = value || driver.rank;
+          driver.rankClass = cssClass;
+          break;
+        case 4:
+          driver.kartNumber = value || driver.kartNumber;
+          driver.kartClass = cssClass || driver.kartClass;
+          break;
+        case 5:
+          driver.name = value || driver.name;
+          break;
+        case 6:
+          driver.sector1 = value;
+          driver.sector1Class = cssClass;
+          break;
+        case 7:
+          driver.sector2 = value;
+          driver.sector2Class = cssClass;
+          break;
+        case 8:
+          driver.sector3 = value;
+          driver.sector3Class = cssClass;
+          break;
+        case 9:
+          driver.laps = value || driver.laps;
+          driver.lapsClass = cssClass;
+          break;
+        case 10:
+          driver.lastLap = value;
+          driver.lastLapClass = cssClass;
+          break;
+        case 11:
+          driver.bestLap = value;
+          driver.bestLapClass = cssClass;
+          // Record new best lap time for this kart
+          if (driver.kartNumber && value) {
+            recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
+          }
+          break;
+      }
     }
     
     updateDriversList();

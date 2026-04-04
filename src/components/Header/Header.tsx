@@ -67,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="header__track-row">
             {track && (
               <p className="header__track">
-                📍 {track}
+                {track}
               </p>
             )}
             <select 
@@ -78,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {Object.values(TRACKS).map(t => (
                 <option key={t.id} value={t.id}>
-                  🏁 {t.name}
+                  {t.name}
                 </option>
               ))}
             </select>
@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setShowResetModal(true)}
             title="Minden adat törlése"
           >
-            🗑️ Reset
+            Reset
           </button>
         </div>
       </div>
@@ -114,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
         <Modal
           isOpen={showResetModal}
           onClose={() => setShowResetModal(false)}
-          title="⚠️ Pálya adatainak törlése"
+          title="Pálya adatainak törlése"
         >
           <div className="header__reset-modal">
             <p className="header__reset-warning">

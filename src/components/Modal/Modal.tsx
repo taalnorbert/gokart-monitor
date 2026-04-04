@@ -36,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
         <div className="modal__header">
           <h2 className="modal__title">{title}</h2>
           <button className="modal__close" onClick={onClose} aria-label="Bezárás">
-            ✕
+            X
           </button>
         </div>
         <div className="modal__content">

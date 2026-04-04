@@ -10,6 +10,10 @@ export interface Driver {
   kartNumber: string;
   kartClass: string;
   name: string;
+  nationality: string;
+  nationalityClass: string;
+  gap: string;
+  gapClass: string;
   sector1: string;
   sector1Class: string;
   sector2: string;

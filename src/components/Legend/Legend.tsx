@@ -17,14 +17,14 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
         onClick={() => setIsExpanded(!isExpanded)}
         aria-expanded={isExpanded}
       >
-        <span className="legend__toggle-icon">{isExpanded ? '▼' : '▶'}</span>
-        <span className="legend__toggle-title">📖 Útmutató - Hogyan értelmezd az adatokat</span>
+        <span className="legend__toggle-icon">{isExpanded ? '-' : '+'}</span>
+        <span className="legend__toggle-title">Útmutató - Hogyan értelmezd az adatokat</span>
       </button>
       
       {isExpanded && (
       <div className="legend__sections">
         <div className="legend__section">
-          <h4 className="legend__section-title">📊 Táblázat oszlopok</h4>
+          <h4 className="legend__section-title">Táblázat oszlopok</h4>
           <dl className="legend__list">
             <div className="legend__item">
               <dt className="legend__term">Poz.</dt>
@@ -58,7 +58,7 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
         </div>
 
         <div className="legend__section">
-          <h4 className="legend__section-title">🎨 Időszínek jelentése</h4>
+          <h4 className="legend__section-title">Időszínek jelentése</h4>
           <div className="legend__colors">
             <div className="legend__color-item">
               <span className="legend__color-sample legend__color-sample--purple"></span>
@@ -94,7 +94,7 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
         </div>
 
         <div className="legend__section">
-          <h4 className="legend__section-title">🚦 Státusz jelzések</h4>
+          <h4 className="legend__section-title">Státusz jelzések</h4>
           <div className="legend__colors">
             <div className="legend__color-item">
               <span className="legend__status-sample legend__status-sample--pit">PIT</span>
@@ -113,7 +113,7 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
 
         {groupColors.length > 0 && (
           <div className="legend__section">
-            <h4 className="legend__section-title">🏎️ Kart csoportok</h4>
+            <h4 className="legend__section-title">Kart csoportok</h4>
             <p className="legend__description">
               A kartok színe a csoportot vagy kategóriát jelzi. Azonos színű kartok egy csoportba tartoznak.
             </p>
@@ -135,7 +135,7 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
         )}
 
         <div className="legend__section">
-          <h4 className="legend__section-title">🚥 Verseny lámpák</h4>
+          <h4 className="legend__section-title">Verseny lámpák</h4>
           <div className="legend__colors">
             <div className="legend__color-item">
               <span className="legend__light legend__light--green">●</span>
@@ -159,7 +159,7 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
         </div>
 
         <div className="legend__section">
-          <h4 className="legend__section-title">🏎️ Kart Rangsor jelzések</h4>
+          <h4 className="legend__section-title">Kart Rangsor jelzések</h4>
           <div className="legend__colors">
             <div className="legend__color-item">
               <span className="legend__kart-active-sample"></span>
@@ -171,7 +171,7 @@ export const Legend: React.FC<LegendProps> = ({ kartStyles }) => {
         </div>
 
         <div className="legend__section legend__section--tips">
-          <h4 className="legend__section-title">💡 Tippek</h4>
+          <h4 className="legend__section-title">Tippek</h4>
           <ul className="legend__tips">
             <li>A <strong>Kart Rangsor</strong> megmutatja melyik gokart a leggyorsabb a pályán</li>
             <li>Kattints egy kartra a rangsorban a részletes statisztikákért</li>

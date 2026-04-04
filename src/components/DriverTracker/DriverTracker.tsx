@@ -3,6 +3,7 @@ import type { Driver, KartStyle, SavedDriver } from '../../types';
 import { getCellStyle, getStatusStyle } from '../../utils/kartColors';
 import { Modal } from '../Modal';
 import { DriverLapHistory } from '../DriverLapHistory';
+import type { TrackId } from '../../hooks/useRaceData';
 import './DriverTracker.css';
 
 interface DriverTrackerProps {
@@ -11,6 +12,7 @@ interface DriverTrackerProps {
   followedDriver: string | null;
   onFollowDriver: (driverName: string | null) => void;
   savedDrivers?: SavedDriver[];
+  trackId: TrackId;
 }
 
 export const DriverTracker: React.FC<DriverTrackerProps> = ({ 
@@ -18,8 +20,10 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
   kartStyles,
   followedDriver,
   onFollowDriver,
-  savedDrivers = []
+  savedDrivers = [],
+  trackId
 }) => {
+  const isClassicGp = trackId === 'classicgp';
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -136,7 +140,6 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
   return (
     <div className="driver-tracker">
       <div className="driver-tracker__header">
-        <span className="driver-tracker__icon">👤</span>
         <span className="driver-tracker__title">Pilóta Követés</span>
         
         <div className="driver-tracker__search-container" ref={dropdownRef}>
@@ -161,7 +164,7 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
                 onClick={handleClearSelection}
                 title="Követés törlése"
               >
-                ✕
+                X
               </button>
             )}
           </div>
@@ -176,7 +179,7 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
                 <>
                   {filteredDrivers.some(d => d.inRace) && (
                     <div className="driver-tracker__dropdown-group">
-                      <div className="driver-tracker__dropdown-label">🏁 Aktuális futam</div>
+                      <div className="driver-tracker__dropdown-label">Aktuális futam</div>
                       {filteredDrivers.filter(d => d.inRace).map((driver) => {
                         const globalIdx = filteredDrivers.findIndex(d => d.name === driver.name);
                         return (
@@ -196,7 +199,7 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
                   )}
                   {filteredDrivers.some(d => !d.inRace) && (
                     <div className="driver-tracker__dropdown-group">
-                      <div className="driver-tracker__dropdown-label">📊 Korábbi pilóták</div>
+                      <div className="driver-tracker__dropdown-label">Korábbi pilóták</div>
                       {filteredDrivers.filter(d => !d.inRace).map((driver) => {
                         const globalIdx = filteredDrivers.findIndex(d => d.name === driver.name);
                         return (
@@ -228,7 +231,7 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
         >
           <option value="">-- Lista --</option>
           {allDriverOptions.length > 0 && drivers.length > 0 && (
-            <optgroup label="🏁 Aktuális futam">
+            <optgroup label="Aktuális futam">
               {allDriverOptions.filter(d => d.inRace).map(driver => (
                 <option key={driver.name} value={driver.name}>
                   #{driver.position} - {driver.name} (Kart {driver.kartNumber})
@@ -237,7 +240,7 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
             </optgroup>
           )}
           {allDriverOptions.some(d => !d.inRace) && (
-            <optgroup label="📊 Korábbi pilóták">
+            <optgroup label="Korábbi pilóták">
               {allDriverOptions.filter(d => !d.inRace).map(driver => (
                 <option key={driver.name} value={driver.name}>
                   {driver.name} {driver.bestLapDisplay ? `(Best: ${driver.bestLapDisplay})` : ''}
@@ -253,7 +256,7 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
             onClick={() => setIsHistoryModalOpen(true)}
             title="Előző köridők megtekintése"
           >
-            📊
+            Előzmények
           </button>
         )}
 
@@ -263,7 +266,7 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
             onClick={() => setIsExpanded(!isExpanded)}
             aria-expanded={isExpanded}
           >
-            {isExpanded ? '▼' : '▶'}
+            {isExpanded ? 'Bezár' : 'Nyit'}
           </button>
         )}
       </div>
@@ -297,47 +300,88 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
           </div>
 
           <div className="driver-tracker__stats">
-            <div className="driver-tracker__stat">
-              <span className="driver-tracker__stat-label">S1</span>
-              <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.sector1Class)}>
-                {trackedDriver.sector1 || '-'}
-              </span>
-            </div>
-            
-            <div className="driver-tracker__stat">
-              <span className="driver-tracker__stat-label">S2</span>
-              <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.sector2Class)}>
-                {trackedDriver.sector2 || '-'}
-              </span>
-            </div>
-            
-            <div className="driver-tracker__stat">
-              <span className="driver-tracker__stat-label">S3</span>
-              <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.sector3Class)}>
-                {trackedDriver.sector3 || '-'}
-              </span>
-            </div>
-            
-            <div className="driver-tracker__stat">
-              <span className="driver-tracker__stat-label">Körök</span>
-              <span className="driver-tracker__stat-value">
-                {trackedDriver.laps || '0'}
-              </span>
-            </div>
-            
-            <div className="driver-tracker__stat">
-              <span className="driver-tracker__stat-label">Utolsó</span>
-              <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.lastLapClass)}>
-                {trackedDriver.lastLap || '-'}
-              </span>
-            </div>
-            
-            <div className="driver-tracker__stat driver-tracker__stat--best">
-              <span className="driver-tracker__stat-label">Legjobb</span>
-              <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.bestLapClass)}>
-                {trackedDriver.bestLap || '-'}
-              </span>
-            </div>
+            {isClassicGp ? (
+              <>
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">Nemzetiség</span>
+                  <span className="driver-tracker__stat-value">
+                    {trackedDriver.nationality || '-'}
+                  </span>
+                </div>
+
+                <div className="driver-tracker__stat driver-tracker__stat--best">
+                  <span className="driver-tracker__stat-label">Legjobb idő</span>
+                  <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.bestLapClass)}>
+                    {trackedDriver.bestLap || '-'}
+                  </span>
+                </div>
+
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">Különbség</span>
+                  <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.gapClass)}>
+                    {trackedDriver.gap || '-'}
+                  </span>
+                </div>
+
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">Utolsó kör</span>
+                  <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.lastLapClass)}>
+                    {trackedDriver.lastLap || '-'}
+                  </span>
+                </div>
+
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">Körök száma</span>
+                  <span className="driver-tracker__stat-value">
+                    {trackedDriver.laps || '0'}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">S1</span>
+                  <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.sector1Class)}>
+                    {trackedDriver.sector1 || '-'}
+                  </span>
+                </div>
+                
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">S2</span>
+                  <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.sector2Class)}>
+                    {trackedDriver.sector2 || '-'}
+                  </span>
+                </div>
+                
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">S3</span>
+                  <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.sector3Class)}>
+                    {trackedDriver.sector3 || '-'}
+                  </span>
+                </div>
+                
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">Körök</span>
+                  <span className="driver-tracker__stat-value">
+                    {trackedDriver.laps || '0'}
+                  </span>
+                </div>
+                
+                <div className="driver-tracker__stat">
+                  <span className="driver-tracker__stat-label">Utolsó</span>
+                  <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.lastLapClass)}>
+                    {trackedDriver.lastLap || '-'}
+                  </span>
+                </div>
+                
+                <div className="driver-tracker__stat driver-tracker__stat--best">
+                  <span className="driver-tracker__stat-label">Legjobb</span>
+                  <span className="driver-tracker__stat-value" style={getCellStyle(trackedDriver.bestLapClass)}>
+                    {trackedDriver.bestLap || '-'}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -362,11 +406,12 @@ export const DriverTracker: React.FC<DriverTrackerProps> = ({
         <Modal
           isOpen={isHistoryModalOpen}
           onClose={() => setIsHistoryModalOpen(false)}
-          title={`📊 ${followedDriver} - Köridő Előzmények`}
+          title={`${followedDriver} - Köridő Előzmények`}
         >
           <DriverLapHistory
             driverName={followedDriver}
             kartStyles={kartStyles}
+            trackId={trackId}
           />
         </Modal>
       )}

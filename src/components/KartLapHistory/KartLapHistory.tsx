@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { KartStyle } from '../../types';
+import type { TrackId } from '../../hooks/useRaceData';
 import './KartLapHistory.css';
 
 interface LapRecord {
@@ -35,6 +36,7 @@ interface KartLapHistoryProps {
   kartNumber: string;
   kartClass?: string;
   kartStyles: Map<string, KartStyle>;
+  trackId: TrackId;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -43,7 +45,8 @@ const API_URL = `${API_BASE_URL}/api`;
 export const KartLapHistory: React.FC<KartLapHistoryProps> = ({ 
   kartNumber, 
   kartClass,
-  kartStyles
+  kartStyles,
+  trackId
 }) => {
   const [data, setData] = useState<KartDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +56,7 @@ export const KartLapHistory: React.FC<KartLapHistoryProps> = ({
     const fetchKartData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/kart/${encodeURIComponent(kartNumber)}`);
+        const response = await fetch(`${API_URL}/kart/${encodeURIComponent(kartNumber)}?trackId=${trackId}`);
         if (!response.ok) {
           throw new Error('Nem sikerült betölteni az adatokat');
         }
@@ -67,7 +70,7 @@ export const KartLapHistory: React.FC<KartLapHistoryProps> = ({
     };
 
     fetchKartData();
-  }, [kartNumber]);
+  }, [kartNumber, trackId]);
 
   const getKartStyle = () => {
     if (!kartClass) return { backgroundColor: '#333', color: '#FFF' };
@@ -109,7 +112,7 @@ export const KartLapHistory: React.FC<KartLapHistoryProps> = ({
     return (
       <div className="kart-lap-history">
         <div className="kart-lap-history__error">
-          <span className="kart-lap-history__error-icon">⚠️</span>
+          <span className="kart-lap-history__error-icon">Hiba</span>
           <span>{error || 'Nincs adat'}</span>
         </div>
       </div>
@@ -206,7 +209,7 @@ export const KartLapHistory: React.FC<KartLapHistoryProps> = ({
                     </td>
                     <td className={`kart-lap-history__cell--time ${isBest ? 'kart-lap-history__cell--time-best' : ''}`}>
                       {lap.timeDisplay}
-                      {isBest && <span className="kart-lap-history__best-badge">🏆</span>}
+                      {isBest && <span className="kart-lap-history__best-badge">Legjobb</span>}
                     </td>
                     <td className="kart-lap-history__cell--delta">
                       {delta && <span className="kart-lap-history__delta">{delta}</span>}

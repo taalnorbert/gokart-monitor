@@ -9,7 +9,7 @@ export const MessageBanner: React.FC<MessageBannerProps> = ({ message }) => {
 
   return (
     <div className="message-banner" role="alert">
-      <span className="message-banner__icon">⚠️</span>
+      <span className="message-banner__icon">Figyelmeztetés</span>
       <span className="message-banner__text">{message}</span>
     </div>
   );

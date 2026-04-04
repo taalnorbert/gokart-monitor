@@ -35,6 +35,13 @@
   text-align: left;
 }
 
+.kart-rankings__toggle-subtitle {
+  color: #aeb7d4;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-align: left;
+}
+
 .kart-rankings__badge {
   background: rgba(255, 215, 0, 0.2);
   color: #ffd700;
@@ -47,6 +54,68 @@
 .kart-rankings__content {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding: 1rem;
+}
+
+.kart-rankings__tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.kart-rankings__tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #cfd7ff;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.kart-rankings__tab:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.kart-rankings__tab--active {
+  background: rgba(0, 212, 255, 0.16);
+  border-color: rgba(0, 212, 255, 0.35);
+  color: #fff;
+}
+
+.kart-rankings__tab-count {
+  min-width: 1.75rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.kart-rankings__summary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.kart-rankings__summary-item {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #aeb7d4;
+  font-size: 0.75rem;
+}
+
+.kart-rankings__summary-item--active {
+  background: rgba(0, 212, 255, 0.12);
+  color: #d9fbff;
 }
 
 .kart-rankings__list {
@@ -78,7 +147,7 @@
 
 .kart-rankings__item {
   display: grid;
-  grid-template-columns: 40px 50px 80px 60px 36px;
+  grid-template-columns: 40px 50px minmax(120px, 1fr) 110px 60px 92px;
   gap: 0.75rem;
   align-items: center;
   padding: 0.625rem 0.75rem;
@@ -105,6 +174,15 @@
   background: rgba(59, 130, 246, 0.3);
 }
 
+.kart-rankings__item--pit {
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.9;
+}
+
+.kart-rankings__item--pit .kart-rankings__kart-badge {
+  filter: grayscale(0.35);
+}
+
 .kart-rankings__rank {
   font-size: 0.9rem;
   text-align: center;
@@ -128,26 +206,59 @@
   color: #00ff88;
 }
 
+.kart-rankings__driver {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.kart-rankings__driver-label {
+  font-size: 0.68rem;
+  color: #8f99b9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kart-rankings__driver-name {
+  font-size: 0.85rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .kart-rankings__laps {
   font-size: 0.75rem;
   color: #888;
 }
 
 .kart-rankings__history-btn {
-  background: rgba(255, 215, 0, 0.15);
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
+  color: #fff;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .kart-rankings__history-btn:hover {
-  background: rgba(255, 215, 0, 0.25);
-  border-color: rgba(255, 215, 0, 0.5);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.32);
   transform: scale(1.1);
+}
+
+.kart-rankings__empty {
+  padding: 1rem;
+  text-align: center;
+  color: #8b94b8;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
 }
 
 .kart-rankings__details {
@@ -233,8 +344,12 @@
 }
 
 @media (max-width: 768px) {
+  .kart-rankings__tabs {
+    grid-template-columns: 1fr;
+  }
+
   .kart-rankings__item {
-    grid-template-columns: 35px 45px 70px 50px 36px;
+    grid-template-columns: 32px 42px minmax(90px, 1fr) 90px 48px 74px;
     gap: 0.5rem;
     padding: 0.5rem;
   }
@@ -261,9 +376,14 @@
   .kart-rankings__content {
     padding: 0.75rem;
   }
+
+  .kart-rankings__tab {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
   
   .kart-rankings__item {
-    grid-template-columns: 30px 40px 65px 45px 32px;
+    grid-template-columns: 28px 38px minmax(72px, 1fr) 78px 42px 68px;
     font-size: 0.8rem;
   }
   

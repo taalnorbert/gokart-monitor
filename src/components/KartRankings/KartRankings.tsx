@@ -1,20 +1,34 @@
 import { useState } from 'react';
-import type { KartStats, KartStyle } from '../../types';
+import type { Driver, KartStats, KartStyle } from '../../types';
 import { Modal } from '../Modal';
 import { KartLapHistory } from '../KartLapHistory';
+import type { TrackId } from '../../hooks/useRaceData';
 import './KartRankings.css';
 
+type KartRankingTab = 'race' | 'pit';
+
 interface KartRankingsProps {
+  drivers: Driver[];
   kartStats: KartStats[];
   kartStyles: Map<string, KartStyle>;
   activeKarts?: Set<string>;
+  trackId: TrackId;
 }
 
-export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyles, activeKarts = new Set() }) => {
+export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, kartStyles, activeKarts = new Set(), trackId }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [historyKart, setHistoryKart] = useState<{ kartNumber: string; kartClass: string } | null>(null);
+  const [selectedTab, setSelectedTab] = useState<KartRankingTab>('race');
 
   if (kartStats.length === 0) return null;
+
+  const raceKarts = kartStats.filter(kart => activeKarts.has(kart.kartNumber));
+  const pitKarts = kartStats.filter(kart => !activeKarts.has(kart.kartNumber));
+  const visibleKarts = selectedTab === 'race' ? raceKarts : pitKarts;
+  const currentDriverByKart = new Map(drivers.map(driver => [driver.kartNumber, driver.name]));
+
+  const raceCount = raceKarts.length;
+  const pitCount = pitKarts.length;
 
   const getKartStyle = (kartClass: string) => {
     const style = kartStyles.get(kartClass);
@@ -31,26 +45,52 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
         onClick={() => setIsExpanded(!isExpanded)}
         aria-expanded={isExpanded}
       >
-        <span className="kart-rankings__toggle-icon">{isExpanded ? '▼' : '▶'}</span>
-        <span className="kart-rankings__toggle-title">🏆 Kart Rangsor</span>
+        <span className="kart-rankings__toggle-icon">{isExpanded ? '-' : '+'}</span>
+        <span className="kart-rankings__toggle-title">Gokart Rangsor</span>
+        <span className="kart-rankings__toggle-subtitle">(itt kell megnézni melyikek a legjobb gokartok)</span>
         <span className="kart-rankings__badge">{kartStats.length} kart</span>
       </button>
 
       {isExpanded && (
         <div className="kart-rankings__content">
+          <div className="kart-rankings__tabs" role="tablist" aria-label="Kart rangsor szűrés">
+            <button
+              className={`kart-rankings__tab ${selectedTab === 'race' ? 'kart-rankings__tab--active' : ''}`}
+              onClick={() => setSelectedTab('race')}
+              role="tab"
+              aria-selected={selectedTab === 'race'}
+              type="button"
+            >
+              <span>Verseny</span>
+              <span className="kart-rankings__tab-count">{raceCount}</span>
+            </button>
+            <button
+              className={`kart-rankings__tab ${selectedTab === 'pit' ? 'kart-rankings__tab--active' : ''}`}
+              onClick={() => setSelectedTab('pit')}
+              role="tab"
+              aria-selected={selectedTab === 'pit'}
+              type="button"
+            >
+              <span>PIT</span>
+              <span className="kart-rankings__tab-count">{pitCount}</span>
+            </button>
+          </div>
+
+          <div className="kart-rankings__summary">
+            <span className="kart-rankings__summary-item kart-rankings__summary-item--active">Használatban: {raceCount}</span>
+            <span className="kart-rankings__summary-item">Nincs használatban: {pitCount}</span>
+          </div>
+
           <div className="kart-rankings__list">
-            {kartStats.map((kart, index) => {
+            {visibleKarts.map((kart, index) => {
               const isActive = activeKarts.has(kart.kartNumber);
               return (
               <div 
                 key={kart.kartNumber}
-                className={`kart-rankings__item ${isActive ? 'kart-rankings__item--active' : ''}`}
+                className={`kart-rankings__item ${isActive ? 'kart-rankings__item--active' : 'kart-rankings__item--pit'}`}
               >
                 <span className="kart-rankings__rank">
-                  {index === 0 && '🥇'}
-                  {index === 1 && '🥈'}
-                  {index === 2 && '🥉'}
-                  {index > 2 && `#${index + 1}`}
+                  {index > 2 ? `#${index + 1}` : `${index + 1}.`}
                 </span>
                 
                 <span 
@@ -62,6 +102,15 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
                 
                 <span className="kart-rankings__time">
                   {kart.bestLapDisplay}
+                </span>
+
+                <span className="kart-rankings__driver">
+                  <span className="kart-rankings__driver-label">
+                        {isActive ? 'Pilóta' : 'Utolsó pilóta'}
+                  </span>
+                  <span className="kart-rankings__driver-name">
+                        {isActive ? (currentDriverByKart.get(kart.kartNumber) || kart.lastDriver || '-') : (kart.lastDriver || '-')}
+                  </span>
                 </span>
                 
                 <span className="kart-rankings__laps">
@@ -76,11 +125,17 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
                   }}
                   title="Köridő előzmények"
                 >
-                  📊
+                  Előzmények
                 </button>
               </div>
             );
             })}
+
+            {visibleKarts.length === 0 && (
+              <div className="kart-rankings__empty">
+                {selectedTab === 'race' ? 'Nincs aktív kart ebben a pályában' : 'Nincs PIT-ben lévő kart ebben a pályában'}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -89,12 +144,13 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ kartStats, kartStyle
         <Modal
           isOpen={!!historyKart}
           onClose={() => setHistoryKart(null)}
-          title={`🏎️ Kart #${historyKart.kartNumber} - Köridő Előzmények`}
+          title={`Kart #${historyKart.kartNumber} - Köridő Előzmények`}
         >
           <KartLapHistory
             kartNumber={historyKart.kartNumber}
             kartClass={historyKart.kartClass}
             kartStyles={kartStyles}
+            trackId={trackId}
           />
         </Modal>
       )}
