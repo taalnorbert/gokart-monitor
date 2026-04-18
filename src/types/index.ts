@@ -14,6 +14,10 @@ export interface Driver {
   nationalityClass: string;
   gap: string;
   gapClass: string;
+  onTrack: string;
+  onTrackClass: string;
+  pits: string;
+  pitsClass: string;
   sector1: string;
   sector1Class: string;
   sector2: string;

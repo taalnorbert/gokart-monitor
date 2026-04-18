@@ -13,19 +13,36 @@ interface LeaderboardProps {
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({ drivers, isConnected, kartStyles, followedDriver, trackId }) => {
   const isClassicGp = trackId === 'classicgp';
+  const isSlovakiaring = trackId === 'slovakiaring';
 
   return (
-    <div className="leaderboard">
+    <div className={`leaderboard ${isSlovakiaring ? 'leaderboard--slovakiaring' : ''}`}>
       <div className="leaderboard__container">
-        <table className="leaderboard__table">
+        <table className={`leaderboard__table ${isSlovakiaring ? 'leaderboard__table--slovakiaring' : ''}`}>
           <thead className="leaderboard__header">
             <tr>
-              <th className="leaderboard__th">Poz</th>
-              <th className="leaderboard__th leaderboard__th--status"></th>
-              <th className="leaderboard__th">Kart</th>
-              <th className="leaderboard__th leaderboard__th--name">{isClassicGp ? 'Versenyző' : 'Pilóta'}</th>
-              {isClassicGp ? (
+              {isSlovakiaring ? (
                 <>
+                  <th className="leaderboard__th">Rnk</th>
+                  <th className="leaderboard__th">Nation</th>
+                  <th className="leaderboard__th">Kart</th>
+                  <th className="leaderboard__th leaderboard__th--name">Driver</th>
+                  <th className="leaderboard__th">S1</th>
+                  <th className="leaderboard__th">S2</th>
+                  <th className="leaderboard__th">S3</th>
+                  <th className="leaderboard__th">Last lap</th>
+                  <th className="leaderboard__th">Best lap</th>
+                  <th className="leaderboard__th">Gap</th>
+                  <th className="leaderboard__th">Laps</th>
+                  <th className="leaderboard__th">On track</th>
+                  <th className="leaderboard__th">Pits</th>
+                </>
+              ) : isClassicGp ? (
+                <>
+                  <th className="leaderboard__th">Poz</th>
+                  <th className="leaderboard__th leaderboard__th--status"></th>
+                  <th className="leaderboard__th">Kart</th>
+                  <th className="leaderboard__th leaderboard__th--name">Versenyző</th>
                   <th className="leaderboard__th">Nemzetiség</th>
                   <th className="leaderboard__th">Legjobb idő</th>
                   <th className="leaderboard__th">Különbség</th>
@@ -34,6 +51,10 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ drivers, isConnected, 
                 </>
               ) : (
                 <>
+                  <th className="leaderboard__th">Poz</th>
+                  <th className="leaderboard__th leaderboard__th--status"></th>
+                  <th className="leaderboard__th">Kart</th>
+                  <th className="leaderboard__th leaderboard__th--name">Pilóta</th>
                   <th className="leaderboard__th leaderboard__th--hide-mobile">S1</th>
                   <th className="leaderboard__th leaderboard__th--hide-mobile">S2</th>
                   <th className="leaderboard__th leaderboard__th--hide-mobile">S3</th>

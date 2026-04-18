@@ -17,6 +17,10 @@
   min-width: 550px;
 }
 
+.leaderboard__table--slovakiaring {
+  min-width: 980px;
+}
+
 .leaderboard__header {
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(30, 30, 50, 0.8) 100%);
   position: sticky;
@@ -147,6 +151,37 @@
   .leaderboard__table {
     min-width: 400px;
   }
+
+  .leaderboard--slovakiaring .leaderboard__table {
+    min-width: 860px;
+  }
+
+  .leaderboard--slovakiaring .leaderboard__th {
+    padding: 0.5rem 0.18rem;
+    font-size: 0.52rem;
+    letter-spacing: 0.03em;
+  }
+
+  .leaderboard--slovakiaring .leaderboard__th--name {
+    min-width: 78px;
+  }
+
+  .leaderboard--slovakiaring .driver-row__cell {
+    padding: 0.45rem 0.18rem;
+    font-size: 0.72rem;
+  }
+
+  .leaderboard--slovakiaring .driver-row__name {
+    min-width: 58px;
+    max-width: 82px;
+    padding-right: 0.04rem;
+  }
+
+  .leaderboard--slovakiaring .driver-row__sector--first {
+    padding-left: 0;
+    min-width: 50px;
+  }
+
 }
 
 @media (max-width: 768px) {
@@ -194,7 +229,36 @@
     padding: 0.5rem 0.2rem;
     font-size: 0.55rem;
   }
-  
+
+  .leaderboard--slovakiaring .leaderboard__table {
+    min-width: 780px;
+  }
+
+  .leaderboard--slovakiaring .leaderboard__th {
+    padding: 0.4rem 0.14rem;
+    font-size: 0.48rem;
+  }
+
+  .leaderboard--slovakiaring .leaderboard__th--name {
+    min-width: 68px;
+  }
+
+  .leaderboard--slovakiaring .driver-row__cell {
+    padding: 0.35rem 0.14rem;
+    font-size: 0.66rem;
+  }
+
+  .leaderboard--slovakiaring .driver-row__name {
+    min-width: 50px;
+    max-width: 68px;
+    padding-right: 0;
+  }
+
+  .leaderboard--slovakiaring .driver-row__sector--first {
+    padding-left: 0;
+    min-width: 44px;
+  }
+
   .leaderboard__empty {
     padding: 2rem 1rem;
   }

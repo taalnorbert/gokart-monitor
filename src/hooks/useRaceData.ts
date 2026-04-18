@@ -154,6 +154,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(wrappedHtml, 'text/html');
     const rows = doc.querySelectorAll('tr[data-id]');
+    const isSlovakiaring = trackId === 'slovakiaring';
     const isClassicGp = trackId === 'classicgp';
     
     addDebugLog(`Found ${rows.length} rows`);
@@ -198,23 +199,27 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         rankClass: getCellClass(3),
         kartNumber: getCell(4),
         kartClass: kartClass,
-        name: getCell(5),
-        nationality: isClassicGp ? getCell(6) : '',
-        nationalityClass: isClassicGp ? getCellClass(6) : '',
-        gap: isClassicGp ? getCell(8) : '',
-        gapClass: isClassicGp ? getCellClass(8) : '',
-        sector1: isClassicGp ? '' : getCell(6),
-        sector1Class: isClassicGp ? '' : getCellClass(6),
-        sector2: isClassicGp ? '' : getCell(7),
-        sector2Class: isClassicGp ? '' : getCellClass(7),
-        sector3: isClassicGp ? '' : getCell(8),
-        sector3Class: isClassicGp ? '' : getCellClass(8),
-        laps: isClassicGp ? getCell(10) : getCell(9),
-        lapsClass: isClassicGp ? getCellClass(10) : getCellClass(9),
-        lastLap: isClassicGp ? getCell(9) : getCell(10),
-        lastLapClass: isClassicGp ? getCellClass(9) : getCellClass(10),
-        bestLap: isClassicGp ? getCell(7) : getCell(11),
-        bestLapClass: isClassicGp ? getCellClass(7) : getCellClass(11),
+        name: isSlovakiaring ? getCell(6) : getCell(5),
+        nationality: isClassicGp ? getCell(6) : isSlovakiaring ? getCell(4) : '',
+        nationalityClass: isClassicGp ? getCellClass(6) : isSlovakiaring ? getCellClass(4) : '',
+        gap: isClassicGp ? getCell(8) : isSlovakiaring ? getCell(12) : '',
+        gapClass: isClassicGp ? getCellClass(8) : isSlovakiaring ? getCellClass(12) : '',
+        onTrack: isSlovakiaring ? getCell(14) : '',
+        onTrackClass: isSlovakiaring ? getCellClass(14) : '',
+        pits: isSlovakiaring ? getCell(15) : '',
+        pitsClass: isSlovakiaring ? getCellClass(15) : '',
+        sector1: isClassicGp ? '' : isSlovakiaring ? getCell(7) : getCell(6),
+        sector1Class: isClassicGp ? '' : isSlovakiaring ? getCellClass(7) : getCellClass(6),
+        sector2: isClassicGp ? '' : isSlovakiaring ? getCell(8) : getCell(7),
+        sector2Class: isClassicGp ? '' : isSlovakiaring ? getCellClass(8) : getCellClass(7),
+        sector3: isClassicGp ? '' : isSlovakiaring ? getCell(9) : getCell(8),
+        sector3Class: isClassicGp ? '' : isSlovakiaring ? getCellClass(9) : getCellClass(8),
+        laps: isClassicGp ? getCell(10) : isSlovakiaring ? getCell(13) : getCell(9),
+        lapsClass: isClassicGp ? getCellClass(10) : isSlovakiaring ? getCellClass(13) : getCellClass(9),
+        lastLap: isClassicGp ? getCell(9) : isSlovakiaring ? getCell(10) : getCell(10),
+        lastLapClass: isClassicGp ? getCellClass(9) : isSlovakiaring ? getCellClass(10) : getCellClass(10),
+        bestLap: isClassicGp ? getCell(7) : isSlovakiaring ? getCell(11) : getCell(11),
+        bestLapClass: isClassicGp ? getCellClass(7) : isSlovakiaring ? getCellClass(11) : getCellClass(11),
         flashEffect: false,
         flashType: '',
       };
@@ -243,6 +248,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     if (!driver) return;
     
     const cellNum = parseInt(cellId.replace('c', ''));
+    const isSlovakiaring = trackId === 'slovakiaring';
     const isClassicGp = trackId === 'classicgp';
     
     if (isClassicGp) {
@@ -286,6 +292,77 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         case 10:
           driver.laps = value || driver.laps;
           driver.lapsClass = cssClass;
+          break;
+      }
+    } else if (isSlovakiaring) {
+      switch (cellNum) {
+        case 1:
+          driver.groupClass = cssClass;
+          break;
+        case 2:
+          driver.statusClass = cssClass;
+          break;
+        case 3:
+          driver.rank = value || driver.rank;
+          driver.rankClass = cssClass;
+          break;
+        case 4:
+          driver.nationality = value || driver.nationality;
+          driver.nationalityClass = cssClass;
+          break;
+        case 5:
+          driver.kartNumber = value || driver.kartNumber;
+          driver.kartClass = cssClass || driver.kartClass;
+          break;
+        case 6:
+          driver.name = value || driver.name;
+          break;
+        case 7:
+          driver.sector1 = value;
+          driver.sector1Class = cssClass;
+          break;
+        case 8:
+          driver.sector2 = value;
+          driver.sector2Class = cssClass;
+          break;
+        case 9:
+          driver.sector3 = value;
+          driver.sector3Class = cssClass;
+          break;
+        case 10:
+          driver.lastLap = value;
+          driver.lastLapClass = cssClass;
+          break;
+        case 11:
+          driver.bestLap = value;
+          driver.bestLapClass = cssClass;
+          if (driver.kartNumber && value) {
+            recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
+          }
+          break;
+        case 12:
+          driver.gap = value;
+          driver.gapClass = cssClass;
+          break;
+        case 13:
+          driver.laps = value || driver.laps;
+          driver.lapsClass = cssClass;
+          break;
+        case 14:
+          driver.onTrack = value;
+          driver.onTrackClass = cssClass;
+          if (value) {
+            driver.status = 'Pályán';
+            driver.statusClass = cssClass || 'in';
+          }
+          break;
+        case 15:
+          driver.pits = value;
+          driver.pitsClass = cssClass;
+          if (value) {
+            driver.status = 'Boxban';
+            driver.statusClass = cssClass || 'pit';
+          }
           break;
       }
     } else {
