@@ -22,6 +22,18 @@ const App: React.FC = () => {
     [selectedTrack]
   );
 
+  const activeKarts = useMemo(() => {
+    if (selectedTrack === 'slovakiaring') {
+      return new Set(
+        drivers
+          .filter(driver => !driver.isPitOut && driver.onTrackClass !== 'to')
+          .map(driver => driver.kartNumber)
+      );
+    }
+
+    return new Set(drivers.map(driver => driver.kartNumber));
+  }, [drivers, selectedTrack]);
+
   const handleTrackSelect = (trackId: TrackId) => {
     setSelectedTrack(trackId);
     localStorage.setItem('selectedTrack', trackId);
@@ -81,7 +93,7 @@ const App: React.FC = () => {
             drivers={drivers}
             kartStats={kartStats} 
             kartStyles={kartStyles}
-            activeKarts={new Set(drivers.map(d => d.kartNumber))}
+            activeKarts={activeKarts}
             trackId={selectedTrack}
           />
           
