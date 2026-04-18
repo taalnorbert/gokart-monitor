@@ -185,7 +185,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
       };
       
       // Get kart class from the div inside .no td
-      const kartDiv = row.querySelector(`.no div[data-id="${id}c4"]`);
+      const kartDiv = row.querySelector(`.no div[data-id="${id}c5"]`);
       const kartClass = kartDiv?.className || '';
       
       const driver: Driver = {
@@ -197,7 +197,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         statusClass: getCellClass(2),
         rank: getCell(3),
         rankClass: getCellClass(3),
-        kartNumber: getCell(4),
+        kartNumber: isSlovakiaring ? getCell(5) : getCell(4),
         kartClass: kartClass,
         name: isSlovakiaring ? getCell(6) : getCell(5),
         nationality: isClassicGp ? getCell(6) : isSlovakiaring ? getCell(4) : '',
