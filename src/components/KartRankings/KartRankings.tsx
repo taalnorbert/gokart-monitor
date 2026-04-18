@@ -25,6 +25,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
   const raceKarts = kartStats.filter(kart => activeKarts.has(kart.kartNumber));
   const pitKarts = kartStats.filter(kart => !activeKarts.has(kart.kartNumber));
   const visibleKarts = selectedTab === 'race' ? raceKarts : pitKarts;
+  const rankByKart = new Map(kartStats.map((kart, index) => [kart.kartNumber, index + 1]));
   const currentDriverByKart = new Map(drivers.map(driver => [driver.kartNumber, driver.name]));
 
   const raceCount = raceKarts.length;
@@ -84,13 +85,14 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
           <div className="kart-rankings__list">
             {visibleKarts.map((kart, index) => {
               const isActive = activeKarts.has(kart.kartNumber);
+              const overallRank = rankByKart.get(kart.kartNumber) ?? index + 1;
               return (
               <div 
                 key={kart.kartNumber}
                 className={`kart-rankings__item ${isActive ? 'kart-rankings__item--active' : 'kart-rankings__item--pit'}`}
               >
                 <span className="kart-rankings__rank">
-                  {index > 2 ? `#${index + 1}` : `${index + 1}.`}
+                  {`${overallRank}.`}
                 </span>
                 
                 <span 
