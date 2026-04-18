@@ -29,12 +29,14 @@ interface KartStats {
 
 class TrackMonitor {
   private static readonly MIN_VALID_LAP_MS = 50_000;
+  private static readonly DUPLICATE_LAP_WINDOW_MS = 45_000;
   private trackId: string;
   private trackName: string;
   private websocketUrl: string;
   private ws: WebSocket | null = null;
   private driversMap: Map<string, any> = new Map();
   private kartStatsMap: Map<string, KartStats> = new Map();
+  private lastPersistedLapMap: Map<string, { lapTimeMs: number; timestamp: number }> = new Map();
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private reconnectDelay = 5000; // 5 seconds
 
@@ -167,6 +169,16 @@ class TrackMonitor {
     
     const lapTimeMs = this.parseLapTimeToMs(lapTimeStr);
     if (lapTimeMs === Infinity) return;
+
+    const now = Date.now();
+    const previousLap = this.lastPersistedLapMap.get(kartNumber);
+    const isDuplicateLap = previousLap
+      && previousLap.lapTimeMs === lapTimeMs
+      && now - previousLap.timestamp < TrackMonitor.DUPLICATE_LAP_WINDOW_MS;
+
+    if (isDuplicateLap) return;
+
+    this.lastPersistedLapMap.set(kartNumber, { lapTimeMs, timestamp: now });
     
     await this.sendLapTimeToDatabase(kartNumber, kartClass, lapTimeMs, lapTimeStr, driverName);
     
@@ -384,6 +396,7 @@ class TrackMonitor {
     messages.forEach(msg => {
       if (msg.startsWith('init|')) {
         this.driversMap.clear();
+        this.lastPersistedLapMap.clear();
           this.log('Init received - clearing data');
       } else if (msg.startsWith('grid||')) {
         const html = msg.substring(6);

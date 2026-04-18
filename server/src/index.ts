@@ -6,6 +6,7 @@ import { startWorker } from './worker';
 const app = express();
 const prisma = new PrismaClient();
 const PORT = 3001;
+const DUPLICATE_LAP_WINDOW_MS = 45_000;
 
 app.use(cors());
 app.use(express.json());
@@ -100,6 +101,22 @@ app.post('/api/lap-time', async (req, res) => {
       driver = await prisma.driver.create({
         data: { name: driverName, trackId }
       });
+    }
+
+    const duplicateCutoff = new Date(Date.now() - DUPLICATE_LAP_WINDOW_MS);
+    const recentDuplicate = await prisma.lapTime.findFirst({
+      where: {
+        kartId: kart.id,
+        driverId: driver.id,
+        trackId,
+        timeMs,
+        createdAt: { gte: duplicateCutoff }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (recentDuplicate) {
+      return res.json({ success: true, deduplicated: true });
     }
 
     await prisma.lapTime.create({

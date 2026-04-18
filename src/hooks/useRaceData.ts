@@ -49,6 +49,7 @@ const parseLapTimeToMs = (timeStr: string): number => {
 };
 
 const MIN_VALID_LAP_MS = 50_000;
+const DUPLICATE_LAP_WINDOW_MS = 45_000;
 
 const isValidRankingLap = (timeStr: string): boolean => {
   const ms = parseLapTimeToMs(timeStr);
@@ -93,6 +94,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
   const driversMapRef = useRef<Map<string, Driver>>(new Map());
   const kartStylesRef = useRef<Map<string, KartStyle>>(new Map());
   const kartStatsRef = useRef<Map<string, KartStats>>(new Map());
+  const lastPersistedLapRef = useRef<Map<string, { lapTimeMs: number; timestamp: number }>>(new Map());
 
   const addDebugLog = useCallback((msg: string) => {
     setDebugLog(prev => [...prev.slice(-20), `${new Date().toLocaleTimeString()}: ${msg}`]);
@@ -133,6 +135,16 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     
     const lapTimeMs = parseLapTimeToMs(lapTimeStr);
     if (lapTimeMs === Infinity) return;
+
+    const now = Date.now();
+    const previousLap = lastPersistedLapRef.current.get(kartNumber);
+    const isDuplicateLap = previousLap
+      && previousLap.lapTimeMs === lapTimeMs
+      && now - previousLap.timestamp < DUPLICATE_LAP_WINDOW_MS;
+
+    if (isDuplicateLap) return;
+
+    lastPersistedLapRef.current.set(kartNumber, { lapTimeMs, timestamp: now });
     
     sendLapTimeToServer(kartNumber, kartClass, lapTimeMs, lapTimeStr, driverName);
     
@@ -611,6 +623,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     kartStylesRef.current.clear();
     setKartStyles(new Map());
     kartStatsRef.current.clear();
+    lastPersistedLapRef.current.clear();
     setKartStats([]);
     setRaceInfo({
       title1: '',
