@@ -28,6 +28,7 @@ interface KartStats {
 }
 
 class TrackMonitor {
+  private static readonly MIN_VALID_LAP_MS = 60_000;
   private trackId: string;
   private trackName: string;
   private websocketUrl: string;
@@ -143,6 +144,22 @@ class TrackMonitor {
     const seconds = parseFloat(timeStr);
     if (isNaN(seconds)) return Infinity;
     return seconds * 1000;
+  }
+
+  private isValidRankingLap(timeStr: string): boolean {
+    const lapMs = this.parseLapTimeToMs(timeStr);
+    return Number.isFinite(lapMs) && lapMs >= TrackMonitor.MIN_VALID_LAP_MS;
+  }
+
+  private getRankingLapValue(bestLap: string, lastLap: string, onTrack: string): string {
+    if (this.shouldUseOnTrackRanking()) {
+      if (this.isValidRankingLap(onTrack)) return onTrack;
+      if (this.isValidRankingLap(bestLap)) return bestLap;
+      if (this.isValidRankingLap(lastLap)) return lastLap;
+      return '';
+    }
+
+    return bestLap;
   }
 
   private async recordKartLapTime(kartNumber: string, kartClass: string, lapTimeStr: string, driverName: string) {
@@ -302,7 +319,7 @@ class TrackMonitor {
       const onTrack = columns.onTrack > 0
         ? (rowContent.match(new RegExp(`data-id="[^"]*c${columns.onTrack}"[^>]*>([^<]*)<`))?.[1].trim() || '')
         : '';
-      const rankingLap = this.shouldUseOnTrackRanking() ? onTrack : bestLap;
+      const rankingLap = this.getRankingLapValue(bestLap, lastLap, onTrack);
       const kartClass = kartClassMatch ? kartClassMatch[1].trim() : '';
       
       if (kartNumber && driverName && rankingLap && rankingLap !== '-') {
@@ -337,18 +354,21 @@ class TrackMonitor {
     if (cellNum === columns.bestLap && value) {
       // Best lap updated
       driver.bestLap = value;
-      if (!this.shouldUseOnTrackRanking() && driver.kartNumber && driver.name) {
-        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', value, driver.name);
+      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '');
+      if (rankingLap && driver.kartNumber && driver.name) {
+        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', rankingLap, driver.name);
       }
     } else if (cellNum === columns.lastLap && value) {
       driver.lastLap = value;
-      if (!this.shouldUseOnTrackRanking() && driver.kartNumber && driver.name) {
-        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', value, driver.name);
+      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '');
+      if (rankingLap && driver.kartNumber && driver.name) {
+        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', rankingLap, driver.name);
       }
     } else if (cellNum === columns.onTrack && value) {
       driver.onTrack = value;
-      if (this.shouldUseOnTrackRanking() && driver.kartNumber && driver.name) {
-        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', value, driver.name);
+      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '');
+      if (rankingLap && driver.kartNumber && driver.name) {
+        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', rankingLap, driver.name);
       }
     } else if (cellNum === columns.kart && value) {
       driver.kartNumber = value;

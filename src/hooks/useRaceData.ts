@@ -48,6 +48,20 @@ const parseLapTimeToMs = (timeStr: string): number => {
   return seconds * 1000;
 };
 
+const MIN_VALID_LAP_MS = 60_000;
+
+const isValidRankingLap = (timeStr: string): boolean => {
+  const ms = parseLapTimeToMs(timeStr);
+  return Number.isFinite(ms) && ms >= MIN_VALID_LAP_MS;
+};
+
+const getSlovakiaringRankingLap = (driver: Driver): string => {
+  if (isValidRankingLap(driver.onTrack)) return driver.onTrack;
+  if (isValidRankingLap(driver.bestLap)) return driver.bestLap;
+  if (isValidRankingLap(driver.lastLap)) return driver.lastLap;
+  return '';
+};
+
 const extractNationality = (value: string, cssClass: string): string => {
   const trimmedValue = value?.trim() || '';
   if (trimmedValue) return trimmedValue;
@@ -85,7 +99,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
   }, []);
 
   const getRankingLapValue = useCallback((driver: Driver): string => {
-    return trackId === 'slovakiaring' ? driver.onTrack : driver.bestLap;
+    return trackId === 'slovakiaring' ? getSlovakiaringRankingLap(driver) : driver.bestLap;
   }, [trackId]);
 
   const updateKartStats = useCallback(() => {
@@ -349,6 +363,12 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         case 10:
           driver.lastLap = value;
           driver.lastLapClass = cssClass;
+          if (driver.kartNumber) {
+            const rankingLapValue = getRankingLapValue(driver);
+            if (rankingLapValue) {
+              recordKartLapTime(driver.kartNumber, driver.kartClass, rankingLapValue, driver.name);
+            }
+          }
           break;
         case 11:
           driver.laps = value || driver.laps;
@@ -364,12 +384,21 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         case 14:
           driver.bestLap = value;
           driver.bestLapClass = cssClass;
+          if (driver.kartNumber) {
+            const rankingLapValue = getRankingLapValue(driver);
+            if (rankingLapValue) {
+              recordKartLapTime(driver.kartNumber, driver.kartClass, rankingLapValue, driver.name);
+            }
+          }
           break;
         case 15:
           driver.onTrack = value;
           driver.onTrackClass = cssClass;
-          if (driver.kartNumber && value) {
-            recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
+          if (driver.kartNumber) {
+            const rankingLapValue = getRankingLapValue(driver);
+            if (rankingLapValue) {
+              recordKartLapTime(driver.kartNumber, driver.kartClass, rankingLapValue, driver.name);
+            }
           }
           if (value) {
             driver.status = 'Pályán';
@@ -436,7 +465,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     }
     
     updateDriversList();
-  }, [updateDriversList, recordKartLapTime]);
+  }, [updateDriversList, recordKartLapTime, getRankingLapValue]);
 
   const updatePosition = useCallback((msg: string) => {
     const match = msg.match(/^(r\d+)\|#\|(\d+)$/);
