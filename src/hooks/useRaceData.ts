@@ -74,6 +74,10 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     setDebugLog(prev => [...prev.slice(-20), `${new Date().toLocaleTimeString()}: ${msg}`]);
   }, []);
 
+  const getRankingLapValue = useCallback((driver: Driver): string => {
+    return trackId === 'slovakiaring' ? driver.lastLap : driver.bestLap;
+  }, [trackId]);
+
   const updateKartStats = useCallback(() => {
     const statsArray = Array.from(kartStatsRef.current.values())
       .filter(stat => stat.bestLapTime !== Infinity)
@@ -224,9 +228,10 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         flashType: '',
       };
       
-      // Record kart lap time for statistics
-      if (driver.kartNumber && driver.bestLap) {
-        recordKartLapTime(driver.kartNumber, driver.kartClass, driver.bestLap, driver.name);
+      // For Slovakiaring the reliable measured time is in lastLap, not bestLap.
+      const rankingLapValue = getRankingLapValue(driver);
+      if (driver.kartNumber && rankingLapValue) {
+        recordKartLapTime(driver.kartNumber, driver.kartClass, rankingLapValue, driver.name);
       }
       
       newDrivers.push(driver);
@@ -236,7 +241,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     addDebugLog(`Parsed ${newDrivers.length} drivers`);
     newDrivers.sort((a, b) => a.position - b.position);
     setDrivers(newDrivers);
-  }, [addDebugLog, recordKartLapTime]);
+  }, [addDebugLog, recordKartLapTime, getRankingLapValue]);
 
   const updateCell = useCallback((msg: string) => {
     // Format: r42c8|tn|11.125 or r42c2|sr|
@@ -332,11 +337,14 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         case 10:
           driver.lastLap = value;
           driver.lastLapClass = cssClass;
+          if (driver.kartNumber && value) {
+            recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
+          }
           break;
         case 11:
           driver.bestLap = value;
           driver.bestLapClass = cssClass;
-          if (driver.kartNumber && value) {
+          if (trackId !== 'slovakiaring' && driver.kartNumber && value) {
             recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
           }
           break;

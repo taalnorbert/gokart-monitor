@@ -13,6 +13,46 @@ app.use(express.json());
 app.get('/api/kart-stats', async (req, res) => {
   try {
     const trackId = req.query.trackId as string || 'max60';
+
+    if (trackId === 'slovakiaring') {
+      const karts = await prisma.kart.findMany({
+        where: { trackId },
+        include: {
+          lapTimes: {
+            where: { trackId },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            include: { driver: true }
+          },
+          _count: {
+            select: { lapTimes: true }
+          }
+        }
+      });
+
+      const latestLapStats = karts
+        .map((kart) => {
+          const latestLap = kart.lapTimes[0];
+          if (!latestLap) return null;
+
+          return {
+            kartNumber: kart.kartNumber,
+            kartClass: kart.kartClass,
+            trackId,
+            bestLapTime: latestLap.timeMs,
+            bestLapDisplay: latestLap.timeDisplay,
+            bestLapDriver: latestLap.driver?.name || '',
+            lapCount: kart._count.lapTimes,
+            createdAt: latestLap.createdAt,
+            updatedAt: latestLap.createdAt
+          };
+        })
+        .filter((stat): stat is NonNullable<typeof stat> => stat !== null)
+        .sort((a, b) => a.bestLapTime - b.bestLapTime);
+
+      return res.json(latestLapStats);
+    }
+
     const stats = await prisma.kartBestLap.findMany({
       where: { trackId },
       orderBy: { bestLapTime: 'asc' }
@@ -87,7 +127,12 @@ app.post('/api/lap-time', async (req, res) => {
         lapCount: existingBest.lapCount + 1
       };
 
-      if (timeMs < existingBest.bestLapTime) {
+      if (trackId === 'slovakiaring') {
+        // Slovakiaring ranking is based on latest last-lap time.
+        updateData.bestLapTime = timeMs;
+        updateData.bestLapDisplay = timeDisplay;
+        updateData.bestLapDriver = driverName;
+      } else if (timeMs < existingBest.bestLapTime) {
         updateData.bestLapTime = timeMs;
         updateData.bestLapDisplay = timeDisplay;
         updateData.bestLapDriver = driverName;

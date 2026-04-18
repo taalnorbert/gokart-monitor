@@ -96,6 +96,37 @@ class TrackMonitor {
     console.log(`[${timestamp}] [${this.trackName}] ${message}`);
   }
 
+  private shouldUseLastLapRanking(): boolean {
+    return this.trackId === 'slovakiaring';
+  }
+
+  private getTrackColumns() {
+    if (this.trackId === 'slovakiaring') {
+      return {
+        kart: 5,
+        name: 6,
+        bestLap: 11,
+        lastLap: 10,
+      };
+    }
+
+    if (this.trackId === 'classicgp') {
+      return {
+        kart: 4,
+        name: 5,
+        bestLap: 7,
+        lastLap: 9,
+      };
+    }
+
+    return {
+      kart: 4,
+      name: 5,
+      bestLap: 11,
+      lastLap: 10,
+    };
+  }
+
   private parseLapTimeToMs(timeStr: string): number {
     if (!timeStr || timeStr === '-') return Infinity;
     
@@ -245,6 +276,7 @@ class TrackMonitor {
     // Simple HTML parsing - extract driver data
     const rowRegex = /<tr[^>]*data-id="(r\d+)"[^>]*data-pos="(\d+)"[^>]*>(.*?)<\/tr>/gs;
     const matches = html.matchAll(rowRegex);
+    const columns = this.getTrackColumns();
     
     for (const match of matches) {
       const driverId = match[1];
@@ -254,18 +286,21 @@ class TrackMonitor {
       if (driverId === 'r0') continue; // Skip header
       
       // Extract cells
-      const kartMatch = rowContent.match(/data-id="[^"]*c4"[^>]*>([^<]*)</);
-      const nameMatch = rowContent.match(/data-id="[^"]*c5"[^>]*>([^<]*)</);
-      const bestLapMatch = rowContent.match(/data-id="[^"]*c11"[^>]*>([^<]*)</);
-      const kartClassMatch = rowContent.match(/class="([^"]*)"[^>]*data-id="[^"]*c4"/);
+      const kartMatch = rowContent.match(new RegExp(`data-id="[^"]*c${columns.kart}"[^>]*>([^<]*)<`));
+      const nameMatch = rowContent.match(new RegExp(`data-id="[^"]*c${columns.name}"[^>]*>([^<]*)<`));
+      const bestLapMatch = rowContent.match(new RegExp(`data-id="[^"]*c${columns.bestLap}"[^>]*>([^<]*)<`));
+      const lastLapMatch = rowContent.match(new RegExp(`data-id="[^"]*c${columns.lastLap}"[^>]*>([^<]*)<`));
+      const kartClassMatch = rowContent.match(new RegExp(`class="([^"]*)"[^>]*data-id="[^"]*c${columns.kart}"`));
       
       const kartNumber = kartMatch ? kartMatch[1].trim() : '';
       const driverName = nameMatch ? nameMatch[1].trim() : '';
       const bestLap = bestLapMatch ? bestLapMatch[1].trim() : '';
+      const lastLap = lastLapMatch ? lastLapMatch[1].trim() : '';
+      const rankingLap = this.shouldUseLastLapRanking() ? lastLap : bestLap;
       const kartClass = kartClassMatch ? kartClassMatch[1].trim() : '';
       
-      if (kartNumber && driverName && bestLap && bestLap !== '-') {
-        this.recordKartLapTime(kartNumber, kartClass, bestLap, driverName);
+      if (kartNumber && driverName && rankingLap && rankingLap !== '-') {
+        this.recordKartLapTime(kartNumber, kartClass, rankingLap, driverName);
       }
       
       // Store driver in map
@@ -274,7 +309,9 @@ class TrackMonitor {
         position,
         kartNumber,
         name: driverName,
-        bestLap
+        bestLap,
+        lastLap,
+        kartClass
       });
     }
   }
@@ -288,16 +325,23 @@ class TrackMonitor {
     if (!driver) return;
     
     const cellNum = parseInt(cellId.replace('c', ''));
-    
-    if (cellNum === 11 && value) {
+    const columns = this.getTrackColumns();
+
+    if (cellNum === columns.bestLap && value) {
       // Best lap updated
       driver.bestLap = value;
-      if (driver.kartNumber && driver.name) {
-        this.recordKartLapTime(driver.kartNumber, cssClass, value, driver.name);
+      if (!this.shouldUseLastLapRanking() && driver.kartNumber && driver.name) {
+        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', value, driver.name);
       }
-    } else if (cellNum === 4 && value) {
+    } else if (cellNum === columns.lastLap && value) {
+      driver.lastLap = value;
+      if (this.shouldUseLastLapRanking() && driver.kartNumber && driver.name) {
+        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', value, driver.name);
+      }
+    } else if (cellNum === columns.kart && value) {
       driver.kartNumber = value;
-    } else if (cellNum === 5 && value) {
+      driver.kartClass = cssClass || driver.kartClass;
+    } else if (cellNum === columns.name && value) {
       driver.name = value;
     }
   }
