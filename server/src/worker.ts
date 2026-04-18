@@ -153,10 +153,10 @@ class TrackMonitor {
     return Number.isFinite(lapMs) && lapMs >= TrackMonitor.MIN_VALID_LAP_MS;
   }
 
-  private getRankingLapValue(bestLap: string, lastLap: string, onTrack: string): string {
+  private getRankingLapValue(bestLap: string, lastLap: string, onTrack: string, onTrackClass: string, isPitOut: boolean): string {
     if (this.shouldUseOnTrackRanking()) {
       if (this.isValidRankingLap(bestLap)) return bestLap;
-      if (this.isValidRankingLap(onTrack)) return onTrack;
+      if (!isPitOut && onTrackClass !== 'to' && this.isValidRankingLap(onTrack)) return onTrack;
       if (this.isValidRankingLap(lastLap)) return lastLap;
       return '';
     }
@@ -331,7 +331,7 @@ class TrackMonitor {
       const onTrack = columns.onTrack > 0
         ? (rowContent.match(new RegExp(`data-id="[^"]*c${columns.onTrack}"[^>]*>([^<]*)<`))?.[1].trim() || '')
         : '';
-      const rankingLap = this.getRankingLapValue(bestLap, lastLap, onTrack);
+      const rankingLap = this.getRankingLapValue(bestLap, lastLap, onTrack, '', false);
       const kartClass = kartClassMatch ? kartClassMatch[1].trim() : '';
       
       if (kartNumber && driverName && rankingLap && rankingLap !== '-') {
@@ -347,6 +347,8 @@ class TrackMonitor {
         bestLap,
         lastLap,
         onTrack,
+        onTrackClass: '',
+        isPitOut: false,
         kartClass
       });
     }
@@ -366,27 +368,56 @@ class TrackMonitor {
     if (cellNum === columns.bestLap && value) {
       // Best lap updated
       driver.bestLap = value;
-      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '');
+      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '', driver.onTrackClass || '', !!driver.isPitOut);
       if (rankingLap && driver.kartNumber && driver.name) {
         this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', rankingLap, driver.name);
       }
     } else if (cellNum === columns.lastLap && value) {
       driver.lastLap = value;
-      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '');
+      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '', driver.onTrackClass || '', !!driver.isPitOut);
       if (rankingLap && driver.kartNumber && driver.name) {
         this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', rankingLap, driver.name);
       }
     } else if (cellNum === columns.onTrack && value) {
       driver.onTrack = value;
-      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '');
+      driver.onTrackClass = cssClass || driver.onTrackClass;
+      if (cssClass === 'to') {
+        driver.isPitOut = true;
+      } else if (cssClass === 'in') {
+        driver.isPitOut = false;
+      }
+      const rankingLap = this.getRankingLapValue(driver.bestLap || '', driver.lastLap || '', driver.onTrack || '', driver.onTrackClass || '', !!driver.isPitOut);
       if (rankingLap && driver.kartNumber && driver.name) {
         this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', rankingLap, driver.name);
+      }
+    } else if (cellNum === 2) {
+      if (cssClass === 'si' || cssClass === 'so') {
+        driver.isPitOut = true;
       }
     } else if (cellNum === columns.kart && value) {
       driver.kartNumber = value;
       driver.kartClass = cssClass || driver.kartClass;
     } else if (cellNum === columns.name && value) {
       driver.name = value;
+    }
+  }
+
+  private updatePitEvent(msg: string) {
+    const match = msg.match(/^(r\d+)\|\*(in|out)\|/);
+    if (!match) return;
+
+    const [, driverId, pitEvent] = match;
+    const driver = this.driversMap.get(driverId);
+    if (!driver) return;
+
+    if (pitEvent === 'in') {
+      driver.isPitOut = true;
+      driver.onTrackClass = 'to';
+    } else {
+      driver.isPitOut = false;
+      if (driver.onTrackClass === 'to') {
+        driver.onTrackClass = 'in';
+      }
     }
   }
 
@@ -403,6 +434,8 @@ class TrackMonitor {
         this.parseGrid(html);
       } else if (msg.match(/^r\d+c\d+\|/)) {
         this.updateCell(msg);
+      } else if (msg.match(/^r\d+\|\*(in|out)\|/)) {
+        this.updatePitEvent(msg);
       }
     });
   }

@@ -65,7 +65,7 @@ export const DriverRow: React.FC<DriverRowProps> = ({ driver, isFirst, kartStyle
             {driver.laps || '-'}
           </td>
           <td className="driver-row__cell" style={getCellStyle(driver.onTrackClass)}>
-            {driver.onTrack || '-'}
+            {driver.onTrackClass === 'to' ? `PIT/OUT ${driver.onTrack || ''}`.trim() : (driver.onTrack || '-')}
           </td>
           <td className="driver-row__cell" style={getCellStyle(driver.pitsClass)}>
             {driver.pits || '-'}

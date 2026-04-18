@@ -30,6 +30,7 @@ export interface Driver {
   lastLapClass: string;
   bestLap: string;
   bestLapClass: string;
+  isPitOut: boolean;
   flashEffect: boolean;
   flashType: string;
 }

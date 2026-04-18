@@ -56,9 +56,13 @@ const isValidRankingLap = (timeStr: string): boolean => {
   return Number.isFinite(ms) && ms >= MIN_VALID_LAP_MS;
 };
 
+const isPitStatusClass = (statusClass: string): boolean => {
+  return statusClass === 'si' || statusClass === 'so';
+};
+
 const getSlovakiaringRankingLap = (driver: Driver): string => {
   if (isValidRankingLap(driver.bestLap)) return driver.bestLap;
-  if (isValidRankingLap(driver.onTrack)) return driver.onTrack;
+  if (!driver.isPitOut && driver.onTrackClass !== 'to' && isValidRankingLap(driver.onTrack)) return driver.onTrack;
   if (isValidRankingLap(driver.lastLap)) return driver.lastLap;
   return '';
 };
@@ -262,9 +266,15 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         lastLapClass: isClassicGp ? getCellClass(9) : isSlovakiaring ? getCellClass(10) : getCellClass(10),
         bestLap: isClassicGp ? getCell(7) : isSlovakiaring ? getCell(14) : getCell(11),
         bestLapClass: isClassicGp ? getCellClass(7) : isSlovakiaring ? getCellClass(14) : getCellClass(11),
+        isPitOut: isSlovakiaring ? getCellClass(15) === 'to' : false,
         flashEffect: false,
         flashType: '',
       };
+
+      if (isSlovakiaring && driver.isPitOut) {
+        driver.status = 'PIT/OUT';
+        driver.statusClass = 'to';
+      }
       
       // For Slovakiaring the reliable measured time is in lastLap, not bestLap.
       const rankingLapValue = getRankingLapValue(driver);
@@ -301,6 +311,10 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
           break;
         case 2:
           driver.statusClass = cssClass;
+          if (isPitStatusClass(cssClass)) {
+            driver.isPitOut = true;
+            driver.status = 'PIT/OUT';
+          }
           break;
         case 3:
           driver.rank = value || driver.rank;
@@ -406,13 +420,21 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         case 15:
           driver.onTrack = value;
           driver.onTrackClass = cssClass;
+          if (cssClass === 'to') {
+            driver.isPitOut = true;
+          } else if (cssClass === 'in') {
+            driver.isPitOut = false;
+          }
           if (driver.kartNumber) {
             const rankingLapValue = getRankingLapValue(driver);
             if (rankingLapValue) {
               recordKartLapTime(driver.kartNumber, driver.kartClass, rankingLapValue, driver.name);
             }
           }
-          if (value) {
+          if (cssClass === 'to') {
+            driver.status = 'PIT/OUT';
+            driver.statusClass = 'to';
+          } else if (value) {
             driver.status = 'Pályán';
             driver.statusClass = cssClass || 'in';
           }
@@ -500,6 +522,20 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
     const flashType = match[2] || ''; // '', 'i1', 'i2', 'i3'
     const driver = driversMapRef.current.get(driverId);
     if (!driver) return;
+
+    if (trackId === 'slovakiaring') {
+      if (flashType === 'in') {
+        driver.isPitOut = true;
+        driver.status = 'PIT/OUT';
+        driver.statusClass = 'to';
+      } else if (flashType === 'out') {
+        driver.isPitOut = false;
+        if (driver.statusClass === 'to') {
+          driver.status = 'Pályán';
+          driver.statusClass = 'in';
+        }
+      }
+    }
     
     driver.flashEffect = true;
     driver.flashType = flashType;
@@ -510,7 +546,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
       driver.flashType = '';
       updateDriversList();
     }, 1000);
-  }, [updateDriversList]);
+  }, [updateDriversList, trackId]);
 
   const processMessages = useCallback((data: string) => {
     const messages = data.split('\n').filter(msg => msg.trim());
