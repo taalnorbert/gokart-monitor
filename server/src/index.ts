@@ -128,7 +128,7 @@ app.post('/api/lap-time', async (req, res) => {
       };
 
       if (trackId === 'slovakiaring') {
-        // Slovakiaring ranking is based on latest last-lap time.
+        // Slovakiaring ranking is based on latest on-track time.
         updateData.bestLapTime = timeMs;
         updateData.bestLapDisplay = timeDisplay;
         updateData.bestLapDriver = driverName;

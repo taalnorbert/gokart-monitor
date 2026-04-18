@@ -96,7 +96,7 @@ class TrackMonitor {
     console.log(`[${timestamp}] [${this.trackName}] ${message}`);
   }
 
-  private shouldUseLastLapRanking(): boolean {
+  private shouldUseOnTrackRanking(): boolean {
     return this.trackId === 'slovakiaring';
   }
 
@@ -105,8 +105,9 @@ class TrackMonitor {
       return {
         kart: 5,
         name: 6,
-        bestLap: 11,
+        bestLap: 14,
         lastLap: 10,
+        onTrack: 15,
       };
     }
 
@@ -116,6 +117,7 @@ class TrackMonitor {
         name: 5,
         bestLap: 7,
         lastLap: 9,
+        onTrack: 0,
       };
     }
 
@@ -124,6 +126,7 @@ class TrackMonitor {
       name: 5,
       bestLap: 11,
       lastLap: 10,
+      onTrack: 0,
     };
   }
 
@@ -296,7 +299,10 @@ class TrackMonitor {
       const driverName = nameMatch ? nameMatch[1].trim() : '';
       const bestLap = bestLapMatch ? bestLapMatch[1].trim() : '';
       const lastLap = lastLapMatch ? lastLapMatch[1].trim() : '';
-      const rankingLap = this.shouldUseLastLapRanking() ? lastLap : bestLap;
+      const onTrack = columns.onTrack > 0
+        ? (rowContent.match(new RegExp(`data-id="[^"]*c${columns.onTrack}"[^>]*>([^<]*)<`))?.[1].trim() || '')
+        : '';
+      const rankingLap = this.shouldUseOnTrackRanking() ? onTrack : bestLap;
       const kartClass = kartClassMatch ? kartClassMatch[1].trim() : '';
       
       if (kartNumber && driverName && rankingLap && rankingLap !== '-') {
@@ -311,6 +317,7 @@ class TrackMonitor {
         name: driverName,
         bestLap,
         lastLap,
+        onTrack,
         kartClass
       });
     }
@@ -330,12 +337,17 @@ class TrackMonitor {
     if (cellNum === columns.bestLap && value) {
       // Best lap updated
       driver.bestLap = value;
-      if (!this.shouldUseLastLapRanking() && driver.kartNumber && driver.name) {
+      if (!this.shouldUseOnTrackRanking() && driver.kartNumber && driver.name) {
         this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', value, driver.name);
       }
     } else if (cellNum === columns.lastLap && value) {
       driver.lastLap = value;
-      if (this.shouldUseLastLapRanking() && driver.kartNumber && driver.name) {
+      if (!this.shouldUseOnTrackRanking() && driver.kartNumber && driver.name) {
+        this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', value, driver.name);
+      }
+    } else if (cellNum === columns.onTrack && value) {
+      driver.onTrack = value;
+      if (this.shouldUseOnTrackRanking() && driver.kartNumber && driver.name) {
         this.recordKartLapTime(driver.kartNumber, driver.kartClass || '', value, driver.name);
       }
     } else if (cellNum === columns.kart && value) {

@@ -48,6 +48,16 @@ const parseLapTimeToMs = (timeStr: string): number => {
   return seconds * 1000;
 };
 
+const extractNationality = (value: string, cssClass: string): string => {
+  const trimmedValue = value?.trim() || '';
+  if (trimmedValue) return trimmedValue;
+
+  const classMatch = cssClass?.match(/\b([A-Z]{2,3})\b\s+nat\b/);
+  if (classMatch) return classMatch[1];
+
+  return '';
+};
+
 export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [raceInfo, setRaceInfo] = useState<RaceInfo>({
@@ -75,7 +85,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
   }, []);
 
   const getRankingLapValue = useCallback((driver: Driver): string => {
-    return trackId === 'slovakiaring' ? driver.lastLap : driver.bestLap;
+    return trackId === 'slovakiaring' ? driver.onTrack : driver.bestLap;
   }, [trackId]);
 
   const updateKartStats = useCallback(() => {
@@ -192,6 +202,8 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
       const kartDiv = row.querySelector(`.no div[data-id="${id}c5"]`);
       const kartClass = kartDiv?.className || '';
       
+      const slovakiaringNationality = extractNationality(getCell(4), getCellClass(4));
+
       const driver: Driver = {
         id,
         position: parseInt(row.getAttribute('data-pos') || '0'),
@@ -204,26 +216,26 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         kartNumber: isSlovakiaring ? getCell(5) : getCell(4),
         kartClass: kartClass,
         name: isSlovakiaring ? getCell(6) : getCell(5),
-        nationality: isClassicGp ? getCell(6) : isSlovakiaring ? getCell(4) : '',
+        nationality: isClassicGp ? getCell(6) : isSlovakiaring ? slovakiaringNationality : '',
         nationalityClass: isClassicGp ? getCellClass(6) : isSlovakiaring ? getCellClass(4) : '',
         gap: isClassicGp ? getCell(8) : isSlovakiaring ? getCell(12) : '',
         gapClass: isClassicGp ? getCellClass(8) : isSlovakiaring ? getCellClass(12) : '',
-        onTrack: isSlovakiaring ? getCell(14) : '',
-        onTrackClass: isSlovakiaring ? getCellClass(14) : '',
-        pits: isSlovakiaring ? getCell(15) : '',
-        pitsClass: isSlovakiaring ? getCellClass(15) : '',
+        onTrack: isSlovakiaring ? getCell(15) : '',
+        onTrackClass: isSlovakiaring ? getCellClass(15) : '',
+        pits: isSlovakiaring ? getCell(16) : '',
+        pitsClass: isSlovakiaring ? getCellClass(16) : '',
         sector1: isClassicGp ? '' : isSlovakiaring ? getCell(7) : getCell(6),
         sector1Class: isClassicGp ? '' : isSlovakiaring ? getCellClass(7) : getCellClass(6),
         sector2: isClassicGp ? '' : isSlovakiaring ? getCell(8) : getCell(7),
         sector2Class: isClassicGp ? '' : isSlovakiaring ? getCellClass(8) : getCellClass(7),
         sector3: isClassicGp ? '' : isSlovakiaring ? getCell(9) : getCell(8),
         sector3Class: isClassicGp ? '' : isSlovakiaring ? getCellClass(9) : getCellClass(8),
-        laps: isClassicGp ? getCell(10) : isSlovakiaring ? getCell(13) : getCell(9),
-        lapsClass: isClassicGp ? getCellClass(10) : isSlovakiaring ? getCellClass(13) : getCellClass(9),
+        laps: isClassicGp ? getCell(10) : isSlovakiaring ? getCell(11) : getCell(9),
+        lapsClass: isClassicGp ? getCellClass(10) : isSlovakiaring ? getCellClass(11) : getCellClass(9),
         lastLap: isClassicGp ? getCell(9) : isSlovakiaring ? getCell(10) : getCell(10),
         lastLapClass: isClassicGp ? getCellClass(9) : isSlovakiaring ? getCellClass(10) : getCellClass(10),
-        bestLap: isClassicGp ? getCell(7) : isSlovakiaring ? getCell(11) : getCell(11),
-        bestLapClass: isClassicGp ? getCellClass(7) : isSlovakiaring ? getCellClass(11) : getCellClass(11),
+        bestLap: isClassicGp ? getCell(7) : isSlovakiaring ? getCell(14) : getCell(11),
+        bestLapClass: isClassicGp ? getCellClass(7) : isSlovakiaring ? getCellClass(14) : getCellClass(11),
         flashEffect: false,
         flashType: '',
       };
@@ -312,7 +324,7 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
           driver.rankClass = cssClass;
           break;
         case 4:
-          driver.nationality = value || driver.nationality;
+          driver.nationality = extractNationality(value, cssClass) || driver.nationality;
           driver.nationalityClass = cssClass;
           break;
         case 5:
@@ -337,34 +349,34 @@ export const useRaceData = (trackId: TrackId = 'max60'): UseRaceDataReturn => {
         case 10:
           driver.lastLap = value;
           driver.lastLapClass = cssClass;
-          if (driver.kartNumber && value) {
-            recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
-          }
           break;
         case 11:
-          driver.bestLap = value;
-          driver.bestLapClass = cssClass;
-          if (trackId !== 'slovakiaring' && driver.kartNumber && value) {
-            recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
-          }
+          driver.laps = value || driver.laps;
+          driver.lapsClass = cssClass;
           break;
         case 12:
           driver.gap = value;
           driver.gapClass = cssClass;
           break;
         case 13:
-          driver.laps = value || driver.laps;
-          driver.lapsClass = cssClass;
+          // Interval column for Slovakiaring, currently not shown in UI.
           break;
         case 14:
+          driver.bestLap = value;
+          driver.bestLapClass = cssClass;
+          break;
+        case 15:
           driver.onTrack = value;
           driver.onTrackClass = cssClass;
+          if (driver.kartNumber && value) {
+            recordKartLapTime(driver.kartNumber, driver.kartClass, value, driver.name);
+          }
           if (value) {
             driver.status = 'Pályán';
             driver.statusClass = cssClass || 'in';
           }
           break;
-        case 15:
+        case 16:
           driver.pits = value;
           driver.pitsClass = cssClass;
           if (value) {
