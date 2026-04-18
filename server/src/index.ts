@@ -10,6 +10,14 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
+app.get('/health', (_req, res) => {
+  res.type('text/plain').status(200).send('OK');
+});
+
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.get('/api/kart-stats', async (req, res) => {
   try {
     const trackId = req.query.trackId as string || 'max60';
