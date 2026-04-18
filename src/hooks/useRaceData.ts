@@ -48,7 +48,7 @@ const parseLapTimeToMs = (timeStr: string): number => {
   return seconds * 1000;
 };
 
-const MIN_VALID_LAP_MS = 60_000;
+const MIN_VALID_LAP_MS = 50_000;
 
 const isValidRankingLap = (timeStr: string): boolean => {
   const ms = parseLapTimeToMs(timeStr);
@@ -56,8 +56,8 @@ const isValidRankingLap = (timeStr: string): boolean => {
 };
 
 const getSlovakiaringRankingLap = (driver: Driver): string => {
-  if (isValidRankingLap(driver.onTrack)) return driver.onTrack;
   if (isValidRankingLap(driver.bestLap)) return driver.bestLap;
+  if (isValidRankingLap(driver.onTrack)) return driver.onTrack;
   if (isValidRankingLap(driver.lastLap)) return driver.lastLap;
   return '';
 };

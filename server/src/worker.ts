@@ -28,7 +28,7 @@ interface KartStats {
 }
 
 class TrackMonitor {
-  private static readonly MIN_VALID_LAP_MS = 60_000;
+  private static readonly MIN_VALID_LAP_MS = 50_000;
   private trackId: string;
   private trackName: string;
   private websocketUrl: string;
@@ -153,8 +153,8 @@ class TrackMonitor {
 
   private getRankingLapValue(bestLap: string, lastLap: string, onTrack: string): string {
     if (this.shouldUseOnTrackRanking()) {
-      if (this.isValidRankingLap(onTrack)) return onTrack;
       if (this.isValidRankingLap(bestLap)) return bestLap;
+      if (this.isValidRankingLap(onTrack)) return onTrack;
       if (this.isValidRankingLap(lastLap)) return lastLap;
       return '';
     }
