@@ -147,7 +147,7 @@
 
 .kart-rankings__item {
   display: grid;
-  grid-template-columns: 40px 50px minmax(120px, 1fr) 110px 60px 92px;
+  grid-template-columns: 34px 48px minmax(100px, 1fr) minmax(96px, 120px) 50px 96px;
   gap: 0.75rem;
   align-items: center;
   padding: 0.625rem 0.75rem;
@@ -177,6 +177,10 @@
 .kart-rankings__item--pit {
   background: rgba(255, 255, 255, 0.02);
   opacity: 0.9;
+}
+
+.kart-rankings__item--pit-history {
+  grid-template-columns: 34px 48px minmax(88px, 1fr) minmax(90px, 110px) minmax(90px, 110px) 50px 96px;
 }
 
 .kart-rankings__item--pit .kart-rankings__kart-badge {
@@ -237,15 +241,18 @@
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.72rem;
   color: #fff;
   white-space: nowrap;
-  width: 100%;
+  width: 96px;
+  max-width: 100%;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kart-rankings__history-btn:hover {

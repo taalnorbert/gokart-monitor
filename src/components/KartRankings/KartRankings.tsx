@@ -93,7 +93,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
               return (
               <div 
                 key={kart.kartNumber}
-                className={`kart-rankings__item ${isActive ? 'kart-rankings__item--active' : 'kart-rankings__item--pit'}`}
+                className={`kart-rankings__item ${isActive ? 'kart-rankings__item--active' : 'kart-rankings__item--pit'} ${!isActive && pitHistoryByKart.has(kart.kartNumber) ? 'kart-rankings__item--pit-history' : ''}`}
               >
                 <span className="kart-rankings__rank">
                   {`${overallRank}.`}
