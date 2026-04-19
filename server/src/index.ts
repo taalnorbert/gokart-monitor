@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { randomUUID } from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { startWorker } from './worker';
 
@@ -7,6 +8,12 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = 3001;
 const DUPLICATE_LAP_WINDOW_MS = 45_000;
+
+type PitHistoryRow = {
+  kartNumber: string;
+  trackId: string;
+  enteredAt: Date;
+};
 
 app.use(cors());
 app.use(express.json());
@@ -17,6 +24,62 @@ app.get('/health', (_req, res) => {
 
 app.get('/api/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });
+});
+
+app.get('/api/pit-history', async (req, res) => {
+  try {
+    const trackId = req.query.trackId as string || 'max60';
+    const pitEntries = await prisma.$queryRaw<PitHistoryRow[]>`
+      SELECT "kartNumber", "trackId", "enteredAt"
+      FROM "PitEntry"
+      WHERE "trackId" = ${trackId}
+      ORDER BY "enteredAt" ASC
+    `;
+
+    res.json(pitEntries.map(entry => ({
+      kartNumber: entry.kartNumber,
+      trackId: entry.trackId,
+      enteredAt: entry.enteredAt
+    })));
+  } catch (error) {
+    console.error('Error fetching pit history:', error);
+    res.status(500).json({ error: 'Failed to fetch pit history' });
+  }
+});
+
+app.post('/api/pit-entry', async (req, res) => {
+  try {
+    const { kartNumber, trackId = 'max60', enteredAt } = req.body;
+
+    if (!kartNumber) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const parsedEnteredAt = enteredAt ? new Date(enteredAt) : new Date();
+    if (Number.isNaN(parsedEnteredAt.getTime())) {
+      return res.status(400).json({ error: 'Invalid enteredAt value' });
+    }
+
+    const pitEntryId = randomUUID();
+
+    await prisma.$executeRaw`
+      INSERT INTO "PitEntry" ("id", "kartNumber", "trackId", "enteredAt", "createdAt")
+      VALUES (${pitEntryId}, ${kartNumber}, ${trackId}, ${parsedEnteredAt}, NOW())
+      ON CONFLICT ("kartNumber", "trackId") DO NOTHING
+    `;
+
+    res.json({
+      success: true,
+      pitEntry: {
+        kartNumber,
+        trackId,
+        enteredAt: parsedEnteredAt
+      }
+    });
+  } catch (error) {
+    console.error('Error saving pit entry:', error);
+    res.status(500).json({ error: 'Failed to save pit entry' });
+  }
 });
 
 app.get('/api/kart-stats', async (req, res) => {
@@ -338,6 +401,11 @@ app.delete('/api/cleanup', async (req, res) => {
       where: { createdAt: { lt: cutoffDate } }
     });
 
+    const deletedPitEntries = await prisma.$executeRaw`
+      DELETE FROM "PitEntry"
+      WHERE "createdAt" < ${cutoffDate}
+    `;
+
     res.json({ 
       success: true,
       deletedCounts: {
@@ -345,7 +413,8 @@ app.delete('/api/cleanup', async (req, res) => {
         drivers: deletedDrivers.count,
         karts: deletedKarts.count,
         kartStats: deletedKartStats.count,
-        total: deletedLapTimes.count + deletedDrivers.count + deletedKarts.count + deletedKartStats.count
+        pitEntries: deletedPitEntries,
+        total: deletedLapTimes.count + deletedDrivers.count + deletedKarts.count + deletedKartStats.count + deletedPitEntries
       },
       cutoffDate 
     });
@@ -372,6 +441,10 @@ app.delete('/api/reset', async (req, res) => {
     await prisma.kart.deleteMany({
       where: { trackId }
     });
+    await prisma.$executeRaw`
+      DELETE FROM "PitEntry"
+      WHERE "trackId" = ${trackId}
+    `;
 
     res.json({ 
       success: true, 
@@ -407,8 +480,13 @@ const runCleanup = async () => {
     const deletedKartStats = await prisma.kartBestLap.deleteMany({
       where: { createdAt: { lt: cutoffDate } }
     });
+
+    const deletedPitEntries = await prisma.$executeRaw`
+      DELETE FROM "PitEntry"
+      WHERE "createdAt" < ${cutoffDate}
+    `;
     
-    const totalDeleted = deletedLapTimes.count + deletedDrivers.count + deletedKarts.count + deletedKartStats.count;
+    const totalDeleted = deletedLapTimes.count + deletedDrivers.count + deletedKarts.count + deletedKartStats.count + deletedPitEntries;
     
     if (totalDeleted > 0) {
       console.log(`Cleanup: Deleted ${totalDeleted} records older than 48 hours`);
@@ -416,6 +494,7 @@ const runCleanup = async () => {
       console.log(`  - Drivers: ${deletedDrivers.count}`);
       console.log(`  - Karts: ${deletedKarts.count}`);
       console.log(`  - Kart stats: ${deletedKartStats.count}`);
+      console.log(`  - Pit entries: ${deletedPitEntries}`);
     }
   } catch (error) {
     console.error('Cleanup error:', error);

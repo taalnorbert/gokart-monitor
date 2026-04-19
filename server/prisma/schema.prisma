@@ -71,3 +71,16 @@ model KartBestLap {
   @@unique([kartNumber, trackId])
   @@index([trackId])
 }
+
+model PitEntry {
+  id            String    @id @default(cuid())
+  kartNumber    String
+  trackId       String    @default("max60")
+  enteredAt     DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  @@unique([kartNumber, trackId])
+  @@index([trackId])
+  @@index([enteredAt])
+  @@index([createdAt])
+}

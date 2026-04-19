@@ -12,10 +12,11 @@ interface KartRankingsProps {
   kartStats: KartStats[];
   kartStyles: Map<string, KartStyle>;
   activeKarts?: Set<string>;
+  pitHistoryByKart?: Map<string, string>;
   trackId: TrackId;
 }
 
-export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, kartStyles, activeKarts = new Set(), trackId }) => {
+export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, kartStyles, activeKarts = new Set(), pitHistoryByKart = new Map(), trackId }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [historyKart, setHistoryKart] = useState<{ kartNumber: string; kartClass: string } | null>(null);
   const [selectedTab, setSelectedTab] = useState<KartRankingTab>('race');
@@ -23,7 +24,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
   if (kartStats.length === 0) return null;
 
   const raceKarts = kartStats.filter(kart => activeKarts.has(kart.kartNumber));
-  const pitKarts = kartStats.filter(kart => !activeKarts.has(kart.kartNumber));
+  const pitKarts = kartStats.filter(kart => pitHistoryByKart.has(kart.kartNumber));
   const visibleKarts = selectedTab === 'race' ? raceKarts : pitKarts;
   const rankByKart = new Map(kartStats.map((kart, index) => [kart.kartNumber, index + 1]));
   const currentDriverByKart = new Map(drivers.map(driver => [driver.kartNumber, driver.name]));
@@ -114,6 +115,13 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
                         {isActive ? (currentDriverByKart.get(kart.kartNumber) || kart.lastDriver || '-') : (kart.lastDriver || '-')}
                   </span>
                 </span>
+
+                {!isActive && pitHistoryByKart.has(kart.kartNumber) && (
+                  <span className="kart-rankings__driver">
+                    <span className="kart-rankings__driver-label">PIT beállás</span>
+                    <span className="kart-rankings__driver-name">{pitHistoryByKart.get(kart.kartNumber)}</span>
+                  </span>
+                )}
                 
                 <span className="kart-rankings__laps">
                   {kart.lapCount} kör
@@ -135,7 +143,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
 
             {visibleKarts.length === 0 && (
               <div className="kart-rankings__empty">
-                {selectedTab === 'race' ? 'Nincs aktív kart ebben a pályában' : 'Nincs PIT-ben lévő kart ebben a pályában'}
+                {selectedTab === 'race' ? 'Nincs aktív kart ebben a pályában' : 'Még nem állt be kart PIT-be ebben a sessionben'}
               </div>
             )}
           </div>

@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Header, MessageBanner, Leaderboard, KartRankings, Legend, DriverTracker, Modal } from './components';
 import { TRACKS, useRaceData, type TrackId } from './hooks/useRaceData';
 import './styles/global.css';
 import './App.css';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = `${API_URL}/api`;
 
 const App: React.FC = () => {
   const [selectedTrack, setSelectedTrack] = useState<TrackId>(() => {
@@ -12,6 +15,7 @@ const App: React.FC = () => {
   const [showTrackPicker, setShowTrackPicker] = useState(true);
   const { drivers, raceInfo, connectionStatus, kartStyles, kartStats, savedDrivers } = useRaceData(selectedTrack);
   const [followedDriver, setFollowedDriver] = useState<string | null>(null);
+  const [pitHistoryByKart, setPitHistoryByKart] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     setShowTrackPicker(true);
@@ -24,15 +28,89 @@ const App: React.FC = () => {
 
   const activeKarts = useMemo(() => {
     if (selectedTrack === 'slovakiaring') {
+      const pitHistoryKarts = new Set(pitHistoryByKart.keys());
       return new Set(
         drivers
-          .filter(driver => !driver.isPitOut && driver.onTrackClass !== 'to')
+          .filter(driver => !driver.isPitOut && driver.onTrackClass !== 'to' && !pitHistoryKarts.has(driver.kartNumber))
           .map(driver => driver.kartNumber)
       );
     }
 
     return new Set(drivers.map(driver => driver.kartNumber));
-  }, [drivers, selectedTrack]);
+  }, [drivers, selectedTrack, pitHistoryByKart]);
+
+  const formatPitEntryTime = useCallback((date: Date): string => {
+    return date.toLocaleTimeString('hu-HU', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }, []);
+
+  const savePitEntryToServer = useCallback(async (kartNumber: string, enteredAtIso: string) => {
+    try {
+      await fetch(`${API_BASE}/pit-entry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kartNumber,
+          trackId: selectedTrack,
+          enteredAt: enteredAtIso
+        })
+      });
+    } catch (error) {
+      console.error('Failed to save pit entry:', error);
+    }
+  }, [selectedTrack]);
+
+  useEffect(() => {
+    const loadPitHistory = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/pit-history?trackId=${selectedTrack}`);
+        if (!response.ok) return;
+
+        const pitEntries: Array<{ kartNumber: string; enteredAt: string }> = await response.json();
+        const next = new Map<string, string>();
+
+        pitEntries.forEach(entry => {
+          const enteredAt = new Date(entry.enteredAt);
+          if (!Number.isNaN(enteredAt.getTime())) {
+            next.set(entry.kartNumber, formatPitEntryTime(enteredAt));
+          }
+        });
+
+        setPitHistoryByKart(next);
+      } catch (error) {
+        console.error('Failed to load pit history:', error);
+      }
+    };
+
+    loadPitHistory();
+  }, [selectedTrack, formatPitEntryTime]);
+
+  useEffect(() => {
+    if (selectedTrack !== 'slovakiaring') return;
+
+    setPitHistoryByKart(prev => {
+      const next = new Map(prev);
+      let changed = false;
+
+      drivers.forEach(driver => {
+        if (!driver.kartNumber) return;
+        if (driver.isPitOut || driver.onTrackClass === 'to') {
+          if (!next.has(driver.kartNumber)) {
+            const now = new Date();
+            const enteredAtDisplay = formatPitEntryTime(now);
+            next.set(driver.kartNumber, enteredAtDisplay);
+            savePitEntryToServer(driver.kartNumber, now.toISOString());
+            changed = true;
+          }
+        }
+      });
+
+      return changed ? next : prev;
+    });
+  }, [drivers, selectedTrack, formatPitEntryTime, savePitEntryToServer]);
 
   const handleTrackSelect = (trackId: TrackId) => {
     setSelectedTrack(trackId);
@@ -94,6 +172,7 @@ const App: React.FC = () => {
             kartStats={kartStats} 
             kartStyles={kartStyles}
             activeKarts={activeKarts}
+            pitHistoryByKart={pitHistoryByKart}
             trackId={selectedTrack}
           />
           
