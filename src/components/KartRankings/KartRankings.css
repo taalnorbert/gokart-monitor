@@ -118,6 +118,35 @@
   color: #d9fbff;
 }
 
+.kart-rankings__pit-sort {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.kart-rankings__pit-sort-btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: #d0d8f5;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.kart-rankings__pit-sort-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.kart-rankings__pit-sort-btn--active {
+  color: #fff;
+  border-color: rgba(255, 215, 0, 0.42);
+  background: rgba(255, 215, 0, 0.16);
+}
+
 .kart-rankings__list {
   display: flex;
   flex-direction: column;

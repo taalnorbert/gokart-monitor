@@ -6,13 +6,14 @@ import type { TrackId } from '../../hooks/useRaceData';
 import './KartRankings.css';
 
 type KartRankingTab = 'race' | 'pit';
+type PitSortMode = 'bestTime' | 'pitEntry';
 
 interface KartRankingsProps {
   drivers: Driver[];
   kartStats: KartStats[];
   kartStyles: Map<string, KartStyle>;
   activeKarts?: Set<string>;
-  pitHistoryByKart?: Map<string, string>;
+  pitHistoryByKart?: Map<string, { enteredAtDisplay: string; enteredAtMs: number }>;
   trackId: TrackId;
 }
 
@@ -20,14 +21,22 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
   const [isExpanded, setIsExpanded] = useState(false);
   const [historyKart, setHistoryKart] = useState<{ kartNumber: string; kartClass: string } | null>(null);
   const [selectedTab, setSelectedTab] = useState<KartRankingTab>('race');
+  const [pitSortMode, setPitSortMode] = useState<PitSortMode>('pitEntry');
 
   if (kartStats.length === 0) return null;
 
   const raceKarts = kartStats.filter(kart => activeKarts.has(kart.kartNumber));
   const hasPitHistory = pitHistoryByKart.size > 0;
-  const pitKarts = hasPitHistory
+  const pitKartsBase = hasPitHistory
     ? kartStats.filter(kart => pitHistoryByKart.has(kart.kartNumber))
     : kartStats.filter(kart => !activeKarts.has(kart.kartNumber));
+  const pitKarts = hasPitHistory && pitSortMode === 'pitEntry'
+    ? [...pitKartsBase].sort((a, b) => {
+        const aMs = pitHistoryByKart.get(a.kartNumber)?.enteredAtMs ?? 0;
+        const bMs = pitHistoryByKart.get(b.kartNumber)?.enteredAtMs ?? 0;
+        return bMs - aMs;
+      })
+    : pitKartsBase;
   const visibleKarts = selectedTab === 'race' ? raceKarts : pitKarts;
   const rankByKart = new Map(kartStats.map((kart, index) => [kart.kartNumber, index + 1]));
   const currentDriverByKart = new Map(drivers.map(driver => [driver.kartNumber, driver.name]));
@@ -86,6 +95,25 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
             <span className="kart-rankings__summary-item">Nincs használatban: {pitCount}</span>
           </div>
 
+          {selectedTab === 'pit' && (
+            <div className="kart-rankings__pit-sort" role="group" aria-label="PIT rendezés">
+              <button
+                type="button"
+                className={`kart-rankings__pit-sort-btn ${pitSortMode === 'bestTime' ? 'kart-rankings__pit-sort-btn--active' : ''}`}
+                onClick={() => setPitSortMode('bestTime')}
+              >
+                Legjobb idő
+              </button>
+              <button
+                type="button"
+                className={`kart-rankings__pit-sort-btn ${pitSortMode === 'pitEntry' ? 'kart-rankings__pit-sort-btn--active' : ''}`}
+                onClick={() => setPitSortMode('pitEntry')}
+              >
+                PIT beállás ideje
+              </button>
+            </div>
+          )}
+
           <div className="kart-rankings__list">
             {visibleKarts.map((kart, index) => {
               const isActive = activeKarts.has(kart.kartNumber);
@@ -122,7 +150,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
                 {!isActive && pitHistoryByKart.has(kart.kartNumber) && (
                   <span className="kart-rankings__driver">
                     <span className="kart-rankings__driver-label">PIT beállás</span>
-                    <span className="kart-rankings__driver-name">{pitHistoryByKart.get(kart.kartNumber)}</span>
+                    <span className="kart-rankings__driver-name">{pitHistoryByKart.get(kart.kartNumber)?.enteredAtDisplay}</span>
                   </span>
                 )}
                 

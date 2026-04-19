@@ -7,6 +7,11 @@ import './App.css';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const API_BASE = `${API_URL}/api`;
 
+type PitHistoryEntry = {
+  enteredAtDisplay: string;
+  enteredAtMs: number;
+};
+
 const App: React.FC = () => {
   const [selectedTrack, setSelectedTrack] = useState<TrackId>(() => {
     const savedTrack = localStorage.getItem('selectedTrack');
@@ -15,7 +20,7 @@ const App: React.FC = () => {
   const [showTrackPicker, setShowTrackPicker] = useState(true);
   const { drivers, raceInfo, connectionStatus, kartStyles, kartStats, savedDrivers } = useRaceData(selectedTrack);
   const [followedDriver, setFollowedDriver] = useState<string | null>(null);
-  const [pitHistoryByKart, setPitHistoryByKart] = useState<Map<string, string>>(new Map());
+  const [pitHistoryByKart, setPitHistoryByKart] = useState<Map<string, PitHistoryEntry>>(new Map());
 
   useEffect(() => {
     setShowTrackPicker(true);
@@ -70,12 +75,15 @@ const App: React.FC = () => {
         if (!response.ok) return;
 
         const pitEntries: Array<{ kartNumber: string; enteredAt: string }> = await response.json();
-        const next = new Map<string, string>();
+        const next = new Map<string, PitHistoryEntry>();
 
         pitEntries.forEach(entry => {
           const enteredAt = new Date(entry.enteredAt);
           if (!Number.isNaN(enteredAt.getTime())) {
-            next.set(entry.kartNumber, formatPitEntryTime(enteredAt));
+            next.set(entry.kartNumber, {
+              enteredAtDisplay: formatPitEntryTime(enteredAt),
+              enteredAtMs: enteredAt.getTime()
+            });
           }
         });
 
@@ -100,8 +108,10 @@ const App: React.FC = () => {
         if (driver.isPitOut || driver.onTrackClass === 'to') {
           if (!next.has(driver.kartNumber)) {
             const now = new Date();
-            const enteredAtDisplay = formatPitEntryTime(now);
-            next.set(driver.kartNumber, enteredAtDisplay);
+            next.set(driver.kartNumber, {
+              enteredAtDisplay: formatPitEntryTime(now),
+              enteredAtMs: now.getTime()
+            });
             savePitEntryToServer(driver.kartNumber, now.toISOString());
             changed = true;
           }
