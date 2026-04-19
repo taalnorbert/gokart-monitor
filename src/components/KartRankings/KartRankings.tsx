@@ -143,7 +143,7 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
 
             {visibleKarts.length === 0 && (
               <div className="kart-rankings__empty">
-                {selectedTab === 'race' ? 'Nincs aktív kart ebben a pályában' : 'Még nem állt be kart PIT-be ebben a sessionben'}
+                {selectedTab === 'race' ? 'Nincs aktív kart ebben a pályában' : 'Még nincs rögzített PIT belépés ezen a pályán'}
               </div>
             )}
           </div>
