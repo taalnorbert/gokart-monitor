@@ -24,7 +24,10 @@ export const KartRankings: React.FC<KartRankingsProps> = ({ drivers, kartStats, 
   if (kartStats.length === 0) return null;
 
   const raceKarts = kartStats.filter(kart => activeKarts.has(kart.kartNumber));
-  const pitKarts = kartStats.filter(kart => pitHistoryByKart.has(kart.kartNumber));
+  const hasPitHistory = pitHistoryByKart.size > 0;
+  const pitKarts = hasPitHistory
+    ? kartStats.filter(kart => pitHistoryByKart.has(kart.kartNumber))
+    : kartStats.filter(kart => !activeKarts.has(kart.kartNumber));
   const visibleKarts = selectedTab === 'race' ? raceKarts : pitKarts;
   const rankByKart = new Map(kartStats.map((kart, index) => [kart.kartNumber, index + 1]));
   const currentDriverByKart = new Map(drivers.map(driver => [driver.kartNumber, driver.name]));
