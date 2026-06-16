@@ -10,9 +10,9 @@ interface TrackConfig {
 }
 
 const TRACKS: TrackConfig[] = [
-  { id: 'max60', name: 'Max60', websocket: 'wss://www.apex-timing.com:9703/' },
-  { id: 'slovakiaring', name: 'Slovakiaring', websocket: 'wss://www.apex-timing.com:8533/' },
-  { id: 'classicgp', name: 'Classic GP', websocket: 'wss://www.apex-timing.com:10063/' }
+  { id: 'max60', name: 'Max60', websocket: 'wss://live-data.apex-timing.com:9703/' },
+  { id: 'slovakiaring', name: 'Slovakiaring', websocket: 'wss://live-data.apex-timing.com:8533/' },
+  { id: 'classicgp', name: 'Classic GP', websocket: 'wss://live-data.apex-timing.com:10063/' }
 ];
 
 interface KartStats {

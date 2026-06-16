@@ -12,9 +12,9 @@ interface UseRaceDataReturn {
 }
 
 export const TRACKS = {
-  MAX60: { name: 'Max60', websocket: 'wss://www.apex-timing.com:9703/', id: 'max60' },
-  SLOVAKIARING: { name: 'Slovakiaring', websocket: 'wss://www.apex-timing.com:8533/', id: 'slovakiaring' },
-  CLASSICGP: { name: 'Classic GP', websocket: 'wss://www.apex-timing.com:10063/', id: 'classicgp' }
+  MAX60: { name: 'Max60', websocket: 'wss://live-data.apex-timing.com:9703/', id: 'max60' },
+  SLOVAKIARING: { name: 'Slovakiaring', websocket: 'wss://live-data.apex-timing.com:8533/', id: 'slovakiaring' },
+  CLASSICGP: { name: 'Classic GP', websocket: 'wss://live-data.apex-timing.com:10063/', id: 'classicgp' }
 } as const;
 
 export type TrackId = typeof TRACKS[keyof typeof TRACKS]['id'];
